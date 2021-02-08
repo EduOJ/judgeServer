@@ -1,0 +1,14 @@
+backend:
+  host: 127.0.0.1
+  port: 8080
+users:
+  script: script_user
+  compile: compile_user
+  run: run_user
+  compare: compare_user
+log:
+  log_path: ./test.log
+  judger_log_path: ./test_judger.log
+auth:
+  name: write_judger_name_here
+  token: write_judger_token_here
