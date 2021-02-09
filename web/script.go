@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"github.com/suntt2019/EduOJJudger/base"
 	"net/http"
 )
@@ -18,7 +19,7 @@ func GetScript(name string) (err error) {
 	}
 	if httpResp.StatusCode() == http.StatusOK {
 		return DownloadFile(httpResp, func(filename string) string {
-			return base.ScriptPath + "/" + name + "/" + filename
+			return viper.GetString("path.scripts") + "/" + name + "/" + filename
 		})
 	}
 	err = HandleBackendErrorResponse(httpResp)

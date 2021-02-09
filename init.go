@@ -22,13 +22,13 @@ func readConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.WithField("error", err).Fatal("Could not read config.")
 	}
-	base.ScriptPath = viper.GetString("path.scripts")
-	if base.ScriptPath[len(base.ScriptPath)-1] == '/' {
-		base.ScriptPath = base.ScriptPath[:len(base.ScriptPath)-1]
+	scriptPath := viper.GetString("path.scripts")
+	if scriptPath[len(scriptPath)-1] == '/' {
+		viper.Set("path.scripts", scriptPath[:len(scriptPath)-1])
 	}
-	base.RunPath = viper.GetString("path.runs")
-	if base.RunPath[len(base.RunPath)-1] == '/' {
-		base.RunPath = base.RunPath[:len(base.RunPath)-1]
+	runPath := viper.GetString("path.runs")
+	if runPath[len(runPath)-1] == '/' {
+		viper.Set("path.runs", runPath[:len(runPath)-1])
 	}
 }
 

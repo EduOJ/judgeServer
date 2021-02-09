@@ -1,24 +1,25 @@
 package base
 
 import (
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 )
 
-func TestRemoveBuffer(t *testing.T) {
+func TestRemoveCache(t *testing.T) {
 	// Not parallel
 	assert.Nil(t, os.RemoveAll("../test_file/test_remove_buffer"))
 	t.Cleanup(func() {
 		_ = os.RemoveAll("../test_file/test_remove_buffer")
 	})
-	ScriptPath = "../test_file/test_remove_buffer/scripts"
-	RunPath = "../test_file/test_remove_buffer/runs"
-	assert.Nil(t, os.MkdirAll(ScriptPath, 0777))
-	assert.Nil(t, os.MkdirAll(RunPath, 0777))
-	assert.Nil(t, RemoveBuffer())
-	_, err := os.Stat(ScriptPath)
+	viper.Set("path.scripts", "../test_file/test_remove_buffer/scripts")
+	viper.Set("path.runs", "../test_file/test_remove_buffer/runs")
+	assert.Nil(t, os.MkdirAll(viper.GetString("path.scripts"), 0777))
+	assert.Nil(t, os.MkdirAll(viper.GetString("path.runs"), 0777))
+	assert.Nil(t, RemoveCache())
+	_, err := os.Stat(viper.GetString("path.scripts"))
 	assert.True(t, os.IsNotExist(err))
-	_, err = os.Stat(RunPath)
+	_, err = os.Stat(viper.GetString("path.runs"))
 	assert.True(t, os.IsNotExist(err))
 }

@@ -6,8 +6,3 @@ import (
 
 // HC means http client
 var HC *resty.Client
-
-var (
-	ScriptPath string
-	RunPath    string
-)

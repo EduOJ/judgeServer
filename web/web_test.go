@@ -59,13 +59,13 @@ func TestMain(m *testing.M) {
 	}
 	ts := httptest.NewServer(http.HandlerFunc(testServerRoute))
 	base.HC = resty.New().SetHostURL(ts.URL)
-	base.ScriptPath = "../test_file/scripts"
-	base.RunPath = "../test_file/runs"
-	if err := base.RemoveBuffer(); err != nil {
+	viper.Set("path.scripts", "../test_file/scripts")
+	viper.Set("path.runs", "../test_file/runs")
+	if err := base.RemoveCache(); err != nil {
 		panic(err)
 	}
 	ret := m.Run()
-	if err := base.RemoveBuffer(); err != nil {
+	if err := base.RemoveCache(); err != nil {
 		panic(err)
 	}
 	os.Exit(ret)
