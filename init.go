@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/go-resty/resty/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/writer"
 	"github.com/spf13/viper"
 	"github.com/suntt2019/EduOJJudger/base"
-	"gopkg.in/resty.v1"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -15,11 +15,20 @@ import (
 )
 
 func readConfig() {
+	// TODO: set default
 	log.Debug("Reading config.")
 	viper.AddConfigPath(".")
 	viper.SetConfigType("yml")
 	if err := viper.ReadInConfig(); err != nil {
 		log.WithField("error", err).Fatal("Could not read config.")
+	}
+	base.ScriptPath = viper.GetString("path.scripts")
+	if base.ScriptPath[len(base.ScriptPath)-1] == '/' {
+		base.ScriptPath = base.ScriptPath[:len(base.ScriptPath)-1]
+	}
+	base.RunPath = viper.GetString("path.runs")
+	if base.RunPath[len(base.RunPath)-1] == '/' {
+		base.RunPath = base.RunPath[:len(base.RunPath)-1]
 	}
 }
 
@@ -56,6 +65,7 @@ func initFileLogger() {
 		log.WithField("error", err).Error("Failed to open log file")
 	}
 	defer file.Close()
+	// TODO: fix log file writing
 
 	log.AddHook(&writer.Hook{
 		Writer: bufio.NewWriter(file),
@@ -70,4 +80,8 @@ func initFileLogger() {
 func initHttpClient() {
 	log.Debug("Initializing http client.")
 	base.HC = resty.New()
+	base.HC.
+		SetHeader("Authorization", viper.GetString("auth.token")).
+		SetHeader("Judger-Name", viper.GetString("auth.name")).
+		SetHostURL(fmt.Sprintf("http://%s:%d/judger", viper.GetString("backend.host"), viper.GetInt("backend.port")))
 }

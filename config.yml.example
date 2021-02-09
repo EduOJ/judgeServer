@@ -12,3 +12,6 @@ log:
 auth:
   name: write_judger_name_here
   token: write_judger_token_here
+path:
+  scripts: ./scripts
+  runs: ./runs
