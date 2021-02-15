@@ -8,6 +8,8 @@ jobs:
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
+      - name: Switch to root
+        run: sudo su
       - name: Install Go
         uses: actions/setup-go@v2
         with:
