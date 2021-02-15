@@ -30,6 +30,10 @@ func readConfig() {
 	if runPath[len(runPath)-1] == '/' {
 		viper.Set("path.runs", runPath[:len(runPath)-1])
 	}
+	tempPath := viper.GetString("path.temp")
+	if tempPath[len(tempPath)-1] == '/' {
+		viper.Set("path.temp", tempPath[:len(tempPath)-1])
+	}
 }
 
 func initConsoleLogger() {
@@ -82,7 +86,7 @@ func initHttpClient() {
 	base.HttpClient = resty.New()
 	base.HttpClient.SetHeader("Authorization", viper.GetString("auth.token")).
 		SetHeader("Judger-Name", viper.GetString("auth.name")).
-		SetHostURL(viper.GetString("backend.endpoint") + "/judger")
+		SetHostURL(viper.GetString("backend.endpoint"))
 }
 
 func initUsers() {

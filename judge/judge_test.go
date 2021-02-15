@@ -32,6 +32,7 @@ func TestMain(m *testing.M) {
 path:
   scripts: ../test_file/scripts
   runs: ../test_file/runs
+  temp: ../test_file/temp
 timeout:
   script:
     unzip: 300s

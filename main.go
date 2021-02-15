@@ -2,7 +2,6 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
-	"github.com/suntt2019/EduOJJudger/api"
 	"os/user"
 )
 
@@ -19,5 +18,4 @@ func main() {
 	initFileLogger()
 	initHttpClient()
 	initUsers()
-	log.Error(api.GetScript("test_script"))
 }

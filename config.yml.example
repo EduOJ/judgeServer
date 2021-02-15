@@ -1,5 +1,5 @@
 backend:
-  endpoint: http://127.0.0.1:8080
+  endpoint: http://127.0.0.1:8080/judger
 user:
   script: script_user
   compile: compile_user
@@ -14,6 +14,7 @@ auth:
 path:
   scripts: ./scripts
   runs: ./runs
+  temp: ./temp
 timeout:
   script:
     unzip: 300s
