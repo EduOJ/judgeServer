@@ -8,8 +8,6 @@ jobs:
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
-      - name: Switch to root
-        run: sudo su
       - name: Install Go
         uses: actions/setup-go@v2
         with:
@@ -21,13 +19,13 @@ jobs:
           sudo useradd run_user
           sudo useradd compare_user
       - name: Echo User
-        run: whoami
+        run: sudo whoami
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.push.head.sha }}
       - name: Go Test
-        run: go test ./...
+        run: sudo go test ./...
   test-race:
     strategy:
       matrix:
