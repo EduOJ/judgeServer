@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/suntt2019/EduOJJudger/base"
 	"github.com/suntt2019/EduOJJudger/judge"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -65,24 +66,24 @@ func TestCheckScript(t *testing.T) {
 func TestInstallScript(t *testing.T) {
 	t.Parallel()
 	scriptsDir := viper.GetString("path.scripts")
-	assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "compile")))
-	assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "other_file")))
-	assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "downloads", "test_install_script_success.zip")))
+	TestFileTempDir, err := ioutil.TempDir(viper.GetString("path.temp"), "")
+	assert.Nil(t, err)
 	assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "test_install_script_success")))
 	t.Cleanup(func() {
-		assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "compile")))
-		assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "other_file")))
-		assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "downloads", "test_install_script_success.zip")))
 		assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "test_install_script_success")))
 	})
 
-	assert.Nil(t, createFileForTest(path.Join(scriptsDir, "compile"), `#!/bin/bash
+	assert.Nil(t, createFileForTest(path.Join(TestFileTempDir, "compile"), `#!/bin/bash
 echo "test_install_script_content" > t.txt
 `))
-	assert.Nil(t, createFileForTest(path.Join(scriptsDir, "other_file"), "other file for testing install script content\n"))
-	assert.Nil(t, createZipFileForTest(path.Join(scriptsDir, "downloads/test_install_script_success.zip"), path.Join(scriptsDir, "compile"), path.Join(scriptsDir, "other_file")))
+	assert.Nil(t, createFileForTest(path.Join(TestFileTempDir, "other_file"), "other file for testing install script content\n"))
+	dir, err := ioutil.TempDir(viper.GetString("path.temp"), "")
+	assert.Nil(t, err)
+	assert.Nil(t, createZipFileForTest(path.Join(dir, "test_install_script_success.zip"), path.Join(TestFileTempDir, "compile"), path.Join(TestFileTempDir, "other_file")))
+	assert.Nil(t, base.ScriptUser.OwnRWX(dir))
+	assert.Nil(t, base.ScriptUser.OwnRWX(dir+"/test_install_script_success.zip"))
 	assert.Nil(t, createFileForTest(path.Join(scriptsDir, "test_install_script_success/old.txt"), "test_install_script_success_old_content"))
-	assert.Nil(t, judge.InstallScript("test_install_script_success"))
+	assert.Nil(t, judge.InstallScript("test_install_script_success", dir))
 	checkFile(t, path.Join(scriptsDir, "test_install_script_success/compile"), `#!/bin/bash
 echo "test_install_script_content" > t.txt
 `)
@@ -94,18 +95,18 @@ echo "test_install_script_content" > t.txt
 func TestRunScript(t *testing.T) {
 	t.Parallel()
 	scriptsDir := viper.GetString("path.scripts")
+	TestFileTempDir, err := ioutil.TempDir(viper.GetString("path.temp"), "")
+	assert.Nil(t, err)
 	assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "test_run_script")))
-	assert.Nil(t, os.RemoveAll("../test_file/test_run_script"))
 	t.Cleanup(func() {
 		assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "test_run_script")))
-		assert.Nil(t, os.RemoveAll("../test_file/test_run_script"))
 	})
 	assert.Nil(t, createFileForTest(path.Join(scriptsDir, "test_run_script/run"), "#!/bin/bash\na=`cat $1`\nb=`cat $2`\necho $a$b > out.txt\n"))
 	assert.Nil(t, base.ScriptUser.OwnRWX(path.Join(scriptsDir, "test_run_script/run")))
-	assert.Nil(t, createFileForTest("../test_file/test_run_script/a.txt", "str1"))
-	assert.Nil(t, createFileForTest("../test_file/test_run_script/b.txt", "str2"))
-	assert.Nil(t, base.ScriptUser.OwnRWX("../test_file/test_run_script"))
-	err := judge.RunScript("test_run_script", "../test_file/test_run_script", "a.txt", "b.txt")
+	assert.Nil(t, createFileForTest(path.Join(TestFileTempDir, "a.txt"), "str1"))
+	assert.Nil(t, createFileForTest(path.Join(TestFileTempDir, "b.txt"), "str2"))
+	assert.Nil(t, base.ScriptUser.OwnRWX(path.Join(TestFileTempDir)))
+	err = judge.RunScript("test_run_script", TestFileTempDir, "a.txt", "b.txt")
 	assert.Nil(t, err)
-	checkFile(t, "../test_file/test_run_script/out.txt", "str1str2")
+	checkFile(t, path.Join(TestFileTempDir, "out.txt"), "str1str2")
 }

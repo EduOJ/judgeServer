@@ -21,10 +21,11 @@ func EnsureLatestScript(name string, updatedAt time.Time) error {
 	if ok {
 		return nil
 	}
-	if err := api.GetScript(name); err != nil {
+	dir, err := api.GetScript(name)
+	if err != nil {
 		return err
 	}
-	return InstallScript(name)
+	return InstallScript(name, dir)
 }
 
 // CheckScript check update time of script folder, if the script need to update, it returns false
@@ -41,7 +42,7 @@ func CheckScript(name string, updatedAt time.Time) (ok bool, err error) {
 	return true, nil
 }
 
-func InstallScript(name string) error {
+func InstallScript(name string, dir string) error {
 	scriptsPath := viper.GetString("path.scripts")
 
 	// remove expired version
@@ -59,7 +60,7 @@ func InstallScript(name string) error {
 
 	// unzip
 	err := base.ScriptUser.RunWithTimeout(exec.Command(
-		"unzip", path.Join(scriptsPath, "downloads", name+".zip"), "-d", path.Join(scriptsPath, name)), viper.GetDuration("timeout.script.unzip"))
+		"unzip", path.Join(dir, name+".zip"), "-d", path.Join(scriptsPath, name)), viper.GetDuration("timeout.script.unzip"))
 	if err != nil {
 		return errors.Wrap(err, "could not unzip script zip file")
 	}
