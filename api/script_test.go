@@ -1,10 +1,10 @@
-package web_test
+package api_test
 
 import (
 	"github.com/stretchr/testify/assert"
-	"github.com/suntt2019/EduOJJudger/base"
-	"github.com/suntt2019/EduOJJudger/web"
+	"github.com/suntt2019/EduOJJudger/api"
 	"net/http"
+	"os"
 	"testing"
 )
 
@@ -21,14 +21,10 @@ func script(wr http.ResponseWriter, r *http.Request) {
 
 func TestGetScript(t *testing.T) {
 	t.Parallel()
-
-	t.Run("Success", func(t *testing.T) {
-		assert.Nil(t, web.GetScript("test_get_script_success"))
-		checkFile(t, "../test_file/scripts/downloads/test_get_script_success.zip", "script_test_get_script_success_content")
+	assert.Nil(t, os.RemoveAll("../test_file/scripts/downloads/test_get_script_success.zip"))
+	t.Cleanup(func() {
+		assert.Nil(t, os.RemoveAll("../test_file/scripts/downloads/test_get_script_success.zip"))
 	})
-
-	t.Run("NotFound", func(t *testing.T) {
-		t.Parallel()
-		assert.Equal(t, base.ErrNotFoundResponse, web.GetScript("non_existing_script"))
-	})
+	assert.Nil(t, api.GetScript("test_get_script_success"))
+	checkFile(t, "../test_file/scripts/downloads/test_get_script_success.zip", "script_test_get_script_success_content")
 }

@@ -1,4 +1,4 @@
-package web_test
+package api_test
 
 import (
 	"github.com/go-resty/resty/v2"
@@ -13,7 +13,7 @@ import (
 )
 
 func R() *resty.Request {
-	return base.HC.R()
+	return base.HttpClient.R()
 }
 
 func checkFile(t *testing.T, path, content string) {
@@ -33,13 +33,10 @@ func testServerRoute(wr http.ResponseWriter, r *http.Request) {
 	switch r.RequestURI[1 : index+1] {
 	case "echoURI":
 		echoURI(wr, r)
-	case "backendErr":
-		backendError(wr, r)
 	case "fileURI":
 		fileURI(wr, r)
 	case "script":
 		script(wr, r)
-
 	default:
 		panic(`invalid service for test server: "` + r.RequestURI[1:index+1] + `"`)
 	}
@@ -52,21 +49,27 @@ func echoURI(wr http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func fileURI(wr http.ResponseWriter, r *http.Request) {
+	// r.RequestURI[9:] remove "/fileURI/"
+	content := strings.Split(r.RequestURI[9:], "/")
+	if len(content) != 2 {
+		panic("unexpected content count")
+	}
+	wr.Header().Set("Content-Disposition", `inline; filename="`+content[0]+`"`) // filename
+	if _, err := wr.Write([]byte(content[1])); err != nil {
+		panic(err)
+	}
+}
+
 func TestMain(m *testing.M) {
 	config := ``
 	if err := viper.ReadConfig(strings.NewReader(config)); err != nil {
 		panic(err)
 	}
 	ts := httptest.NewServer(http.HandlerFunc(testServerRoute))
-	base.HC = resty.New().SetHostURL(ts.URL)
+	base.HttpClient = resty.New().SetHostURL(ts.URL)
 	viper.Set("path.scripts", "../test_file/scripts")
 	viper.Set("path.runs", "../test_file/runs")
-	if err := base.RemoveCache(); err != nil {
-		panic(err)
-	}
 	ret := m.Run()
-	if err := base.RemoveCache(); err != nil {
-		panic(err)
-	}
 	os.Exit(ret)
 }

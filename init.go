@@ -79,11 +79,10 @@ func initFileLogger() {
 
 func initHttpClient() {
 	log.Debug("Initializing http client.")
-	base.HC = resty.New()
-	base.HC.
-		SetHeader("Authorization", viper.GetString("auth.token")).
+	base.HttpClient = resty.New()
+	base.HttpClient.SetHeader("Authorization", viper.GetString("auth.token")).
 		SetHeader("Judger-Name", viper.GetString("auth.name")).
-		SetHostURL(fmt.Sprintf("http://%s:%d/judger", viper.GetString("backend.host"), viper.GetInt("backend.port")))
+		SetHostURL(viper.GetString("backend.endpoint") + "/judger")
 }
 
 func initUsers() {

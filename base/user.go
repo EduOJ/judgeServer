@@ -22,7 +22,7 @@ var (
 	CompareUser User
 )
 
-func (u User) Init(username string) error {
+func (u *User) Init(username string) error {
 	var err error
 	if u.User, err = user.Lookup(username); err != nil {
 		return err
@@ -32,7 +32,7 @@ func (u User) Init(username string) error {
 		return err
 	}
 	u.Gid = uint32(gid)
-	uid, err := strconv.ParseUint(u.User.Gid, 10, 32)
+	uid, err := strconv.ParseUint(u.User.Uid, 10, 32)
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func (u User) Init(username string) error {
 	return nil
 }
 
-func (u User) Run(cmd *exec.Cmd) error {
+func (u *User) Run(cmd *exec.Cmd) error {
 	if cmd.SysProcAttr == nil {
 		cmd.SysProcAttr = &syscall.SysProcAttr{}
 	}
@@ -48,13 +48,13 @@ func (u User) Run(cmd *exec.Cmd) error {
 	return cmd.Run()
 }
 
-func (u User) RunWithTimeout(cmd *exec.Cmd, timeout time.Duration) error {
+func (u *User) RunWithTimeout(cmd *exec.Cmd, timeout time.Duration) error {
 	return WithTimeout(timeout, func() error {
 		return u.Run(cmd)
 	})
 }
 
-func (u User) OwnRWX(path string) error {
+func (u *User) OwnRWX(path string) error {
 	if err := os.Chmod(path, 0700); err != nil {
 		return err
 	}

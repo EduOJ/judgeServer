@@ -44,12 +44,6 @@ timeout:
 	if err := base.ScriptUser.Init(viper.GetString("user.script")); err != nil {
 		panic(err)
 	}
-	if err := base.RemoveCache(); err != nil {
-		panic(err)
-	}
 	ret := m.Run()
-	//if err := base.RemoveCache(); err != nil {
-	//	panic(err)
-	//}
 	os.Exit(ret)
 }

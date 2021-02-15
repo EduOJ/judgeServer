@@ -4,5 +4,5 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-// HC means http client
-var HC *resty.Client
+// HttpClient means http client
+var HttpClient *resty.Client
