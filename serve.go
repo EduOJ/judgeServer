@@ -5,4 +5,5 @@ func Serve() {
 	readConfig()
 	initFileLogger()
 	initHttpClient()
+	initUsers()
 }

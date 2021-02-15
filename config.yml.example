@@ -1,7 +1,7 @@
 backend:
   host: 127.0.0.1
   port: 8080
-users:
+user:
   script: script_user
   compile: compile_user
   run: run_user
@@ -15,3 +15,7 @@ auth:
 path:
   scripts: ./scripts
   runs: ./runs
+timeout:
+  script:
+    unzip: 300s
+    compile: 600s

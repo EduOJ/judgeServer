@@ -24,7 +24,7 @@ func TestGetScript(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		assert.Nil(t, web.GetScript("test_get_script_success"))
-		checkFile(t, "../test_file/scripts/test_get_script_success/script_test_get_script_success.zip", "script_test_get_script_success_content")
+		checkFile(t, "../test_file/scripts/downloads/test_get_script_success.zip", "script_test_get_script_success_content")
 	})
 
 	t.Run("NotFound", func(t *testing.T) {

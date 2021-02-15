@@ -19,7 +19,7 @@ func GetScript(name string) (err error) {
 	}
 	if httpResp.StatusCode() == http.StatusOK {
 		return DownloadFile(httpResp, func(filename string) string {
-			return viper.GetString("path.scripts") + "/" + name + "/" + filename
+			return viper.GetString("path.scripts") + "/downloads/" + name + ".zip"
 		})
 	}
 	err = HandleBackendErrorResponse(httpResp)
