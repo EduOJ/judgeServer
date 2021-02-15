@@ -21,6 +21,6 @@ func script(wr http.ResponseWriter, r *http.Request) {
 
 func TestGetScript(t *testing.T) {
 	dir, err := api.GetScript("test_get_script_success")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	checkFile(t, path.Join(dir, "test_get_script_success.zip"), "script_test_get_script_success_content")
 }

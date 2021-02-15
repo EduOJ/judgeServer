@@ -44,10 +44,10 @@ func TestCheckScript(t *testing.T) {
 		})
 		assert.Nil(t, createFileForTest(path.Join(scriptsDir, "test_check_script_up_to_date/t.txt"), "test_check_script_up_to_date_content"))
 		status, err := os.Stat(path.Join(scriptsDir, "test_check_script_up_to_date"))
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		ok, err := judge.CheckScript("test_check_script_up_to_date", status.ModTime().Add(-1*time.Second))
 		assert.True(t, ok)
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 	})
 	t.Run("Expired", func(t *testing.T) {
 		assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "test_check_script_expired")))
@@ -56,10 +56,10 @@ func TestCheckScript(t *testing.T) {
 		})
 		assert.Nil(t, createFileForTest(path.Join(scriptsDir, "test_check_script_expired/t.txt"), "test_check_script_expired_content"))
 		status, err := os.Stat(path.Join(scriptsDir, "test_check_script_expired"))
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		ok, err := judge.CheckScript("test_check_script_expired", status.ModTime().Add(1*time.Second))
 		assert.False(t, ok)
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 	})
 }
 
@@ -67,7 +67,7 @@ func TestInstallScript(t *testing.T) {
 	t.Parallel()
 	scriptsDir := viper.GetString("path.scripts")
 	TestFileTempDir, err := ioutil.TempDir(viper.GetString("path.temp"), "")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "test_install_script_success")))
 	t.Cleanup(func() {
 		assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "test_install_script_success")))
@@ -78,7 +78,7 @@ echo "test_install_script_content" > t.txt
 `))
 	assert.Nil(t, createFileForTest(path.Join(TestFileTempDir, "other_file"), "other file for testing install script content\n"))
 	dir, err := ioutil.TempDir(viper.GetString("path.temp"), "")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Nil(t, createZipFileForTest(path.Join(dir, "test_install_script_success.zip"), path.Join(TestFileTempDir, "compile"), path.Join(TestFileTempDir, "other_file")))
 	assert.Nil(t, base.ScriptUser.OwnRWX(dir))
 	assert.Nil(t, base.ScriptUser.OwnRWX(dir+"/test_install_script_success.zip"))
@@ -96,7 +96,7 @@ func TestRunScript(t *testing.T) {
 	t.Parallel()
 	scriptsDir := viper.GetString("path.scripts")
 	TestFileTempDir, err := ioutil.TempDir(viper.GetString("path.temp"), "")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "test_run_script")))
 	t.Cleanup(func() {
 		assert.Nil(t, os.RemoveAll(path.Join(scriptsDir, "test_run_script")))
@@ -107,6 +107,6 @@ func TestRunScript(t *testing.T) {
 	assert.Nil(t, createFileForTest(path.Join(TestFileTempDir, "b.txt"), "str2"))
 	assert.Nil(t, base.ScriptUser.OwnRWX(path.Join(TestFileTempDir)))
 	err = judge.RunScript("test_run_script", TestFileTempDir, "a.txt", "b.txt")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	checkFile(t, path.Join(TestFileTempDir, "out.txt"), "str1str2")
 }

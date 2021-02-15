@@ -18,10 +18,10 @@ func R() *resty.Request {
 
 func checkFile(t *testing.T, path, content string) {
 	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	b := make([]byte, len(content))
 	_, err = file.Read(b)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, content, string(b))
 }
 
