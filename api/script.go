@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/suntt2019/EduOJJudger/base"
 	"io/ioutil"
@@ -12,7 +13,7 @@ import (
 // To ensure the atomicity of updating script, this function SHOULD NOT
 // be used in functions other than judge.EnsureLatestScript.
 func GetScript(name string) (*os.File, error) {
-	f, err := ioutil.TempFile("", "")
+	f, err := ioutil.TempFile("", fmt.Sprintf("eduoj_judger_script_%s_*", name))
 	if err != nil {
 		return f, errors.Wrap(err, "could not create temp file")
 	}

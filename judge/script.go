@@ -13,7 +13,15 @@ import (
 
 var ScriptLock sync.Mutex
 
-func EnsureLatestScript(name string, latestUpdateTime time.Time) error {
+func RunScript(name string, latestUpdateTime time.Time) (err error) {
+	err = ensureLatestScript(name, latestUpdateTime)
+	if err != nil {
+		return
+	}
+	return runScript(name)
+}
+
+func ensureLatestScript(name string, latestUpdateTime time.Time) error {
 	ScriptLock.Lock()
 	defer ScriptLock.Unlock()
 	ok, err := checkScript(name, latestUpdateTime)
@@ -46,8 +54,14 @@ func checkScript(name string, latestUpdateTime time.Time) (ok bool, err error) {
 
 // installScript unzips temped zip file and compiles the script.
 func installScript(name string, file *os.File) error {
+
+	err := os.RemoveAll(path.Join(viper.GetString("path.scripts"), name))
+	if err != nil {
+		return errors.Wrap(err, "could not remove old version script")
+	}
+
 	// TODO: Fix issue
-	err := exec.Command("unzip", file.Name(), "-d", path.Join(viper.GetString("path.scripts"), name)).Run()
+	err = exec.Command("unzip", file.Name(), "-d", path.Join(viper.GetString("path.scripts"), name)).Run()
 	if err != nil {
 		return errors.Wrap(err, "could not unzip script zip file")
 	}
@@ -61,7 +75,7 @@ func installScript(name string, file *os.File) error {
 	return nil
 }
 
-func RunScript(name string) error {
+func runScript(name string) error {
 	cmd := exec.Command("./run")
 	cmd.Dir = path.Join(viper.GetString("path.scripts"), name)
 	if err := cmd.Run(); err != nil {

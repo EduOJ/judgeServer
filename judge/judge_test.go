@@ -37,12 +37,12 @@ path:
 	if err := viper.ReadConfig(strings.NewReader(config)); err != nil {
 		panic(err)
 	}
-	dir, err := ioutil.TempDir("", "")
+	dir, err := ioutil.TempDir("", "eduoj_judger_test_scripts_*")
 	if err != nil {
 		panic(errors.Wrap(err, "could not create temp dir"))
 	}
 	viper.Set("path.scripts", dir)
-	dir, err = ioutil.TempDir("", "")
+	dir, err = ioutil.TempDir("", "eduoj_judger_test_runs_*")
 	if err != nil {
 		panic(errors.Wrap(err, "could not create temp dir"))
 	}

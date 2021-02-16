@@ -8,7 +8,7 @@ import (
 // run with timeout when the timeout duration isn't zero
 // run without timeout when the timeout duration is zero
 func WithTimeout(timeout time.Duration, f func() error) error {
-	if timeout.Nanoseconds() == 0 {
+	if timeout == 0 {
 		return f()
 	}
 	done := make(chan bool, 1)

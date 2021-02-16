@@ -2,8 +2,9 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
-	"github.com/suntt2019/EduOJJudger/api"
+	"github.com/suntt2019/EduOJJudger/judge"
 	"os/user"
+	"time"
 )
 
 func main() {
@@ -20,5 +21,6 @@ func main() {
 	initHttpClient()
 	initUsers()
 
-	log.Error(api.GetScript("non_stored_script"))
+	// for test
+	log.Error(judge.RunScript("test_script", time.Now()))
 }

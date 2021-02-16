@@ -41,7 +41,7 @@ func TestInstallScript(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
-		tempDir, err := ioutil.TempDir("", "")
+		tempDir, err := ioutil.TempDir("", "eduoj_judger_test_install_script_*")
 		assert.NoError(t, err)
 
 		compile, err := os.Create(path.Join(tempDir, "compile"))
@@ -51,15 +51,28 @@ echo "test_install_script_success" > t.txt`)
 		assert.NoError(t, err)
 		err = os.Chmod(compile.Name(), 0777)
 		assert.NoError(t, err)
+		err = compile.Close()
+		assert.NoError(t, err)
 
 		other, err := os.Create(path.Join(tempDir, "other_file"))
 		assert.NoError(t, err)
 		_, err = other.WriteString("test_install_script_success_other")
 		assert.NoError(t, err)
+		err = other.Close()
+		assert.NoError(t, err)
 
-		tempFile, err := ioutil.TempFile("", "")
+		tempFile, err := ioutil.TempFile("", "eduoj_judger_test_install_script_*")
 		assert.NoError(t, err)
 		err = exec.Command("zip", "-j", tempFile.Name(), compile.Name(), other.Name()).Run()
+		assert.NoError(t, err)
+
+		err = os.MkdirAll(path.Join(viper.GetString("path.scripts"), "test_install_script_success"), 0777)
+		assert.NoError(t, err)
+		old, err := os.Create(path.Join(viper.GetString("path.scripts"), "test_install_script_success", "old_file"))
+		assert.NoError(t, err)
+		_, err = old.WriteString("test_install_script_success_old_file")
+		assert.NoError(t, err)
+		err = old.Close()
 		assert.NoError(t, err)
 
 		err = installScript("test_install_script_success", tempFile)
@@ -71,12 +84,13 @@ echo "test_install_script_success" > t.txt`)
 			"test_install_script_success_other")
 		checkFile(t, path.Join(viper.GetString("path.scripts"), "test_install_script_success", "t.txt"),
 			"test_install_script_success")
+		checkFileNonExist(t, path.Join(viper.GetString("path.scripts"), "test_install_script_success", "old_file"))
 	})
 
 	t.Run("CompileCouldNotRun", func(t *testing.T) {
 		t.Parallel()
 
-		tempDir, err := ioutil.TempDir("", "")
+		tempDir, err := ioutil.TempDir("", "eduoj_judger_test_install_script_*")
 		assert.NoError(t, err)
 
 		compile, err := os.Create(path.Join(tempDir, "compile"))
@@ -85,13 +99,17 @@ echo "test_install_script_success" > t.txt`)
 		assert.NoError(t, err)
 		err = os.Chmod(compile.Name(), 0777)
 		assert.NoError(t, err)
+		err = compile.Close()
+		assert.NoError(t, err)
 
 		other, err := os.Create(path.Join(tempDir, "other_file"))
 		assert.NoError(t, err)
 		_, err = other.WriteString("test_install_script_compile_could_not_run_other")
 		assert.NoError(t, err)
+		err = other.Close()
+		assert.NoError(t, err)
 
-		tempFile, err := ioutil.TempFile("", "")
+		tempFile, err := ioutil.TempFile("", "eduoj_judger_test_install_script_*")
 		assert.NoError(t, err)
 		err = exec.Command("zip", "-j", tempFile.Name(), compile.Name(), other.Name()).Run()
 		assert.NoError(t, err)
@@ -102,6 +120,7 @@ echo "test_install_script_success" > t.txt`)
 	})
 }
 
+// tests for function judge.runScript
 func TestRunScript(t *testing.T) {
 	t.Parallel()
 
@@ -120,7 +139,7 @@ echo "test_run_script_success" > t.txt`)
 		err = r.Close()
 		assert.NoError(t, err)
 
-		err = RunScript("test_run_script_success")
+		err = runScript("test_run_script_success")
 		assert.NoError(t, err)
 		checkFile(t, path.Join(viper.GetString("path.scripts"), "test_run_script_success", "t.txt"),
 			"test_run_script_success")
@@ -140,9 +159,8 @@ echo "test_run_script_success" > t.txt`)
 		err = r.Close()
 		assert.NoError(t, err)
 
-		err = RunScript("test_run_script_fail")
+		err = runScript("test_run_script_fail")
 		assert.NotNil(t, err)
 		assert.Equal(t, "could not run script: fork/exec ./run: exec format error", err.Error())
 	})
-
 }
