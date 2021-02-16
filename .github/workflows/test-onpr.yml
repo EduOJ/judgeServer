@@ -14,10 +14,8 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Add User
         run: |
-          sudo useradd script_user
           sudo useradd compile_user
           sudo useradd run_user
-          sudo useradd compare_user
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -37,10 +35,8 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Add User
         run: |
-          sudo useradd script_user
           sudo useradd compile_user
           sudo useradd run_user
-          sudo useradd compare_user
       - name: Checkout code
         uses: actions/checkout@v2
         with:

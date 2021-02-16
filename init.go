@@ -91,10 +91,6 @@ func initHttpClient() {
 
 func initUsers() {
 	var err error
-	err = base.ScriptUser.Init(viper.GetString("user.script"))
-	if err != nil {
-		log.Fatal("Could not init script user named " + viper.GetString("user.script"))
-	}
 	err = base.CompileUser.Init(viper.GetString("user.compile"))
 	if err != nil {
 		log.Fatal("Could not find compile user named " + viper.GetString("user.compile"))
@@ -102,9 +98,5 @@ func initUsers() {
 	err = base.RunUser.Init(viper.GetString("user.run"))
 	if err != nil {
 		log.Fatal("Could not find run user named " + viper.GetString("user.run"))
-	}
-	err = base.CompareUser.Init(viper.GetString("user.compare"))
-	if err != nil {
-		log.Fatal("Could not find compare user named " + viper.GetString("user.compare"))
 	}
 }

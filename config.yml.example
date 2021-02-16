@@ -1,10 +1,8 @@
 backend:
   endpoint: http://127.0.0.1:8080/judger
 user:
-  script: script_user
   compile: compile_user
   run: run_user
-  compare: compare_user
 log:
   log_path: ./test.log
   judger_log_path: ./test_judger.log
@@ -15,7 +13,3 @@ path:
   scripts: ./scripts
   runs: ./runs
   temp: ./temp
-timeout:
-  script:
-    unzip: 300s
-    compile: 600s

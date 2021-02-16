@@ -16,10 +16,8 @@ type User struct {
 }
 
 var (
-	ScriptUser  User
 	CompileUser User
 	RunUser     User
-	CompareUser User
 )
 
 func (u *User) Init(username string) error {
