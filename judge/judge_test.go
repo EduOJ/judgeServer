@@ -1,9 +1,11 @@
-package judge_test
+package judge
 
 import (
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/suntt2019/EduOJJudger/base"
+	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -42,6 +44,16 @@ timeout:
 	if err := viper.ReadConfig(strings.NewReader(config)); err != nil {
 		panic(err)
 	}
+	dir, err := ioutil.TempDir("", "")
+	if err != nil {
+		panic(errors.Wrap(err, "could not create temp dir"))
+	}
+	viper.Set("path.scripts", dir)
+	dir, err = ioutil.TempDir("", "")
+	if err != nil {
+		panic(errors.Wrap(err, "could not create temp dir"))
+	}
+	viper.Set("path.runs", dir)
 	if err := base.ScriptUser.Init(viper.GetString("user.script")); err != nil {
 		panic(err)
 	}

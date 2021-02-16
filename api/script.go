@@ -1,26 +1,32 @@
 package api
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 	"github.com/suntt2019/EduOJJudger/base"
 	"io/ioutil"
+	"net/http"
+	"os"
 	"path"
 )
 
-func GetScript(name string) (string, error) {
-	dir, err := ioutil.TempDir(viper.GetString("path.temp"), "")
+// To ensure the atomicity of updating script, this function SHOULD NOT
+// be used in functions other than judge.EnsureLatestScript.
+func GetScript(name string) (*os.File, error) {
+	f, err := ioutil.TempFile("", "")
 	if err != nil {
-		return "", errors.Wrap(err, "could not get temp dir")
+		return f, errors.Wrap(err, "could not create temp file")
 	}
-	if err := base.ScriptUser.OwnRWX(dir); err != nil {
-		return "", errors.Wrap(err, "could not set permission for temp dir")
-	}
-	_, err = base.HttpClient.R().SetOutput(path.Join(dir, name+".zip")).
-		Get(fmt.Sprintf("script/%s", name))
+	resp, err := base.HttpClient.R().SetOutput(f.Name()).
+		Get(path.Join("script", name))
 	if err != nil {
-		return "", errors.Wrap(err, "could not sent request")
+		return nil, errors.Wrap(err, "could not send request")
 	}
-	return dir, nil
+	if resp.StatusCode() == http.StatusOK {
+		return f, nil
+	}
+	body, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not read response body")
+	}
+	return nil, errors.New("unexpected response: " + string(body))
 }

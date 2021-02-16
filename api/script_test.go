@@ -1,26 +1,36 @@
-package api_test
+package api
 
 import (
 	"github.com/stretchr/testify/assert"
-	"github.com/suntt2019/EduOJJudger/api"
+	"io/ioutil"
 	"net/http"
 	"path"
 	"testing"
 )
 
-func script(wr http.ResponseWriter, r *http.Request) {
-	// r.RequestURI[8:] remove "/script/"
-	name := r.RequestURI[8:]
-	switch name {
-	case "non_existing_script":
-		http.Redirect(wr, r, "/backendErr/404/NOT_FOUND", http.StatusFound)
-	default:
-		http.Redirect(wr, r, "/fileURI/script_"+name+".zip/script_"+name+"_content", http.StatusFound)
-	}
+func script(wr http.ResponseWriter, r *http.Request, uri string) {
+	http.Redirect(wr, r, path.Join("/fileURI", uri+".zip", uri+"_content"), http.StatusFound)
 }
 
 func TestGetScript(t *testing.T) {
-	dir, err := api.GetScript("test_get_script_success")
-	assert.NoError(t, err)
-	checkFile(t, path.Join(dir, "test_get_script_success.zip"), "script_test_get_script_success_content")
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+		f, err := GetScript("test_get_script_success")
+		assert.NoError(t, err)
+		body, err := ioutil.ReadAll(f)
+		assert.NoError(t, err)
+		assert.Equal(t, "test_get_script_success_content", string(body))
+	})
+
+	t.Run("NotFound", func(t *testing.T) {
+		t.Parallel()
+		_, err := GetScript("test_get_script_NON_EXISTING")
+		assert.NotNil(t, err)
+		assert.Equal(t, `unexpected response: <?xml version="1.0" encoding="UTF-8"?>`+
+			"<Error><Code>NoSuchKey</Code>"+
+			"<Message>The specified key does not exist.</Message>"+
+			"</Error>", err.Error())
+	})
 }
