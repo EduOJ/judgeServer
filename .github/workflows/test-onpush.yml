@@ -16,6 +16,10 @@ jobs:
         run: |
           sudo useradd build_user
           sudo useradd run_user
+      - name: Make Install Lib Seccomp
+          run: |
+            sudo apt-get install libseccomp-dev
+            mkdir build && cd build && cmake .. && make && sudo make install
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -37,6 +41,10 @@ jobs:
         run: |
           sudo useradd build_user
           sudo useradd run_user
+      - name: Make Install Lib Seccomp
+          run: |
+            sudo apt-get install libseccomp-dev
+            mkdir build && cd build && cmake .. && make && sudo make install
       - name: Checkout code
         uses: actions/checkout@v2
         with:
