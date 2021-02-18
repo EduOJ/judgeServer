@@ -23,3 +23,5 @@ require (
 	github.com/suntt2019/Judger v0.0.1
 	golang.org/x/sys v0.0.0-20210217105451-b926d437f341 // indirect
 )
+
+replace github.com/stretchr/testify v1.6.1 => github.com/leoleoasd/testify v1.6.2-0.20200818074144-885db91dbfe9
