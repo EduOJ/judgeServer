@@ -157,6 +157,19 @@ func TestGetTask(t *testing.T) {
 			CompareResult:      false,
 			JudgeResult:        0,
 		}, task)
+		// debugging CI
+		assert.Equal(t, models.Script{
+			Name:      "test_task_build_script",
+			Filename:  "test_task_build_script_filename",
+			CreatedAt: hashStringToTime("test_task_build_script_created_at"),
+			UpdatedAt: hashStringToTime("test_task_build_script_updated_at"),
+		}, *task.Language.BuildScript)
+		assert.Equal(t, models.Script{
+			Name:      "test_task_run_script",
+			Filename:  "test_task_run_script_filename",
+			CreatedAt: hashStringToTime("test_task_run_script_created_at"),
+			UpdatedAt: hashStringToTime("test_task_run_script_updated_at"),
+		}, *task.Language.RunScript)
 	})
 
 	t.Run("NotFound", func(t *testing.T) {
