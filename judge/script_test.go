@@ -83,7 +83,7 @@ echo "test_install_script_success" > t.txt`)
 		checkFile(t, path.Join(viper.GetString("path.scripts"), "test_install_script_success", "other_file"),
 			"test_install_script_success_other")
 		checkFile(t, path.Join(viper.GetString("path.scripts"), "test_install_script_success", "t.txt"),
-			"test_install_script_success")
+			"test_install_script_success\n")
 		checkFileNonExist(t, path.Join(viper.GetString("path.scripts"), "test_install_script_success", "old_file"))
 	})
 
@@ -142,7 +142,7 @@ echo "test_run_script_success" > t.txt`)
 		err = runScript("test_run_script_success")
 		assert.NoError(t, err)
 		checkFile(t, path.Join(viper.GetString("path.scripts"), "test_run_script_success", "t.txt"),
-			"test_run_script_success")
+			"test_run_script_success\n")
 	})
 
 	t.Run("Fail", func(t *testing.T) {

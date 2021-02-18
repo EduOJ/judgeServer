@@ -13,23 +13,23 @@ import (
 
 var ScriptLock sync.Mutex
 
-func RunScript(name string, latestUpdateTime time.Time) (err error) {
+func RunScript(name string, latestUpdateTime time.Time, args ...string) (err error) {
 	err = EnsureLatestScript(name, latestUpdateTime)
 	if err != nil {
 		return
 	}
-	return runScript(name)
+	return runScript(name, args...)
 }
 
-func RunScriptWithOutput(name string, latestUpdateTime time.Time) (out string, err error) {
+func RunScriptWithOutput(name string, latestUpdateTime time.Time, args ...string) (out string, err error) {
 	err = EnsureLatestScript(name, latestUpdateTime)
 	if err != nil {
 		return
 	}
-	return runScriptWithOutput(name)
+	return runScriptWithOutput(name, args...)
 }
 
-func EnsureLatestScript(name string, latestUpdateTime time.Time) error {
+func EnsureLatestScript(name string, latestUpdateTime time.Time) error { // TODO: check file named updated_at
 	ScriptLock.Lock()
 	defer ScriptLock.Unlock()
 	ok, err := checkScript(name, latestUpdateTime)
@@ -83,9 +83,10 @@ func installScript(name string, file *os.File) error {
 	return nil
 }
 
-func runScript(name string) error {
+func runScript(name string, args ...string) error {
 	cmd := exec.Command("./run")
 	cmd.Dir = path.Join(viper.GetString("path.scripts"), name)
+	cmd.Args = append([]string{"./run"}, args...)
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "could not run script")
 	}
@@ -93,9 +94,10 @@ func runScript(name string) error {
 	return nil
 }
 
-func runScriptWithOutput(name string) (string, error) {
+func runScriptWithOutput(name string, args ...string) (string, error) {
 	cmd := exec.Command("./run")
 	cmd.Dir = path.Join(viper.GetString("path.scripts"), name)
+	cmd.Args = append([]string{"./run"}, args...)
 	b, err := cmd.Output()
 	if err != nil {
 		return "", errors.Wrap(err, "could not run script")

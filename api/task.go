@@ -9,7 +9,6 @@ import (
 	"github.com/suntt2019/EduOJJudger/base"
 	judger "github.com/suntt2019/Judger"
 	"net/http"
-	"os"
 	"path"
 	"time"
 )
@@ -29,7 +28,7 @@ type Task struct {
 	BuildArg           string        `json:"compile_environment"` // E.g.  O2=false
 	CompareScript      models.Script `json:"compare_script"`
 	JudgeDir           string
-	RunFile            *os.File
+	RunFilePath        string
 	TimeUsed           uint
 	MemoryUsed         uint
 	OutputStrippedHash string

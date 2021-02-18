@@ -70,7 +70,6 @@ func testServerRoute(wr http.ResponseWriter, r *http.Request) {
 	default:
 		panic(`invalid service for test server: "` + service + `"`)
 	}
-
 }
 
 func echoURI(wr http.ResponseWriter, uri string) {
@@ -88,6 +87,5 @@ func TestMain(m *testing.M) {
 	base.HttpClient = resty.New().SetHostURL(ts.URL)
 	viper.Set("path.scripts", "../test_file/scripts")
 	viper.Set("path.test_cases", "../test_file/test_cases")
-	ret := m.Run()
-	os.Exit(ret)
+	os.Exit(m.Run())
 }

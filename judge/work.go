@@ -66,7 +66,7 @@ func work() {
 		if err != nil {
 			log.WithField("error", err).Error("Error occurred when getting task.")
 		}
-		err = api.UpdateRun(task.RunID, getRequest(task, judge(task)))
+		err = api.UpdateRun(task.RunID, generateRequest(task, judge(task)))
 		if err != nil {
 			log.WithField("error", err).Error("Error occurred when sending update request.")
 		}
@@ -74,7 +74,7 @@ func work() {
 	base.QuitWG.Done()
 }
 
-func getRequest(task *api.Task, judgementError error) *request.UpdateRunRequest {
+func generateRequest(task *api.Task, judgementError error) *request.UpdateRunRequest {
 	req := request.UpdateRunRequest{
 		Status:             "",
 		MemoryUsed:         task.MemoryUsed,
@@ -131,9 +131,9 @@ func judge(task *api.Task) error {
 		return errors.Wrap(err, "could not run user program")
 	}
 
-	outBytes, err := ioutil.ReadAll(&base.StrippedReader{Inner: bufio.NewReader(task.RunFile)})
-	h := sha256.Sum256(outBytes)
-	task.OutputStrippedHash = string(h[:])
+	if err = hashOutput(task); err != nil {
+		return errors.Wrap(err, "could not hash output")
+	}
 
 	if task.CompareResult, err = compare(task); err != nil {
 		return errors.Wrap(err, "could not compare output")
@@ -147,7 +147,10 @@ func getTestCase(task *api.Task) error {
 	l.(*sync.Mutex).Lock()
 	defer l.(*sync.Mutex).Unlock()
 
-	updatedAtPath := path.Join(viper.GetString("test_cases"), strconv.Itoa(int(task.TestCaseID)), "updated_at")
+	updatedAtPath := path.Join(viper.GetString("path.test_cases"), strconv.Itoa(int(task.TestCaseID)), "updated_at")
+	if err := os.MkdirAll(path.Join(viper.GetString("path.test_cases"), strconv.Itoa(int(task.TestCaseID))), 0700); err != nil { // TODO:perm
+		return errors.Wrap(err, "could not create directory for test cases")
+	}
 	ok, err := base.IsFileLatest(updatedAtPath, task.TestCaseUpdatedAt)
 	if err != nil {
 		return err
@@ -161,8 +164,12 @@ func getTestCase(task *api.Task) error {
 	if err = api.GetFile(task.OutputFile, task.OutputFilePath); err != nil {
 		return errors.Wrap(err, "could not get output file")
 	}
-	if _, err = os.Create(updatedAtPath); err != nil {
+	updatedAt, err := os.Create(updatedAtPath)
+	if err != nil {
 		return errors.Wrap(err, "could not get updated_at file")
+	}
+	if err = updatedAt.Close(); err != nil {
+		return errors.Wrap(err, "could not close updated_at file")
 	}
 	return nil
 }
@@ -212,11 +219,12 @@ func build(task *api.Task) error {
 }
 
 func run(task *api.Task) error {
-	var err error
-	task.RunFile, err = ioutil.TempFile("", "eduoj_judger_run_file_*")
+	runFile, err := ioutil.TempFile("", "eduoj_judger_run_file_*")
 	if err != nil {
 		return errors.Wrap(err, "could not create temp file")
 	}
+	task.RunFilePath = runFile.Name()
+	defer runFile.Close()
 
 	if err = base.BuildUser.OwnModDir(task.JudgeDir, 0700); err != nil {
 		return errors.Wrap(err, "could not set permission for judge directory")
@@ -226,7 +234,7 @@ func run(task *api.Task) error {
 		return errors.Wrap(err, "could not set permission for input file")
 	}
 
-	if err = base.RunUser.OwnMod(task.RunFile.Name(), 0600); err != nil {
+	if err = base.RunUser.OwnMod(runFile.Name(), 0600); err != nil {
 		return errors.Wrap(err, "could not set permission for run file")
 	}
 
@@ -260,15 +268,31 @@ func run(task *api.Task) error {
 	return nil
 }
 
-func compare(task *api.Task) (accepted bool, err error) {
-	out, err := RunScriptWithOutput(task.CompareScript.Name, task.CompareScript.UpdatedAt)
+func hashOutput(task *api.Task) error {
+	f, err := os.Open(task.RunFilePath)
 	if err != nil {
-		return false, errors.Wrap(err, "could not ensure latest compare script "+task.CompareScript.Name)
+		return errors.Wrap(err, "could not open run file")
+	}
+	defer f.Close()
+	outBytes, err := ioutil.ReadAll(&base.StrippedReader{Inner: bufio.NewReader(f)})
+	if err != nil {
+		return err
+	}
+	h := sha256.Sum256(outBytes)
+	task.OutputStrippedHash = string(h[:])
+	return nil
+}
+
+func compare(task *api.Task) (accepted bool, err error) {
+	out, err := RunScriptWithOutput(task.CompareScript.Name, task.CompareScript.UpdatedAt,
+		task.RunFilePath, task.OutputFilePath)
+	if err != nil {
+		return false, errors.Wrap(err, "could not run compare script "+task.CompareScript.Name)
 	}
 	switch out {
-	case "ACCEPTED":
+	case "ACCEPTED\n":
 		return true, nil
-	case "WRONG_ANSWER":
+	case "WRONG_ANSWER\n":
 		return false, nil
 	default:
 		return false, errors.New("unexpected compare script output: " + out)

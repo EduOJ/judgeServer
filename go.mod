@@ -10,6 +10,7 @@ require (
 	github.com/leoleoasd/EduOJBackend v0.0.0-20210209123950-8c967968cbdc
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/minio/minio-go/v7 v7.0.9 // indirect
+	github.com/minio/sha256-simd v0.1.1
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1
