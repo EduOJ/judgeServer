@@ -19,7 +19,6 @@ jobs:
       - name: Make Install Lib Seccomp
         run: |
           sudo apt-get install libseccomp-dev
-          mkdir build && cd build && cmake .. && make && sudo make install
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -44,7 +43,6 @@ jobs:
       - name: Make Install Lib Seccomp
         run: |
           sudo apt-get install libseccomp-dev
-          mkdir build && cd build && cmake .. && make && sudo make install
       - name: Checkout code
         uses: actions/checkout@v2
         with:
