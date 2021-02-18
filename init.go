@@ -26,9 +26,9 @@ func readConfig() {
 	if scriptPath[len(scriptPath)-1] == '/' {
 		viper.Set("path.scripts", scriptPath[:len(scriptPath)-1])
 	}
-	runPath := viper.GetString("path.runs")
+	runPath := viper.GetString("path.test_cases")
 	if runPath[len(runPath)-1] == '/' {
-		viper.Set("path.runs", runPath[:len(runPath)-1])
+		viper.Set("path.test_cases", runPath[:len(runPath)-1])
 	}
 	tempPath := viper.GetString("path.temp")
 	if tempPath[len(tempPath)-1] == '/' {
@@ -91,7 +91,7 @@ func initHttpClient() {
 
 func initUsers() {
 	var err error
-	err = base.CompileUser.Init(viper.GetString("user.compile"))
+	err = base.BuildUser.Init(viper.GetString("user.compile"))
 	if err != nil {
 		log.Fatal("Could not find compile user named " + viper.GetString("user.compile"))
 	}

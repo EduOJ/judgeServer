@@ -16,8 +16,8 @@ type User struct {
 }
 
 var (
-	CompileUser User
-	RunUser     User
+	BuildUser User
+	RunUser   User
 )
 
 func (u *User) Init(username string) error {
@@ -52,9 +52,16 @@ func (u *User) RunWithTimeout(cmd *exec.Cmd, timeout time.Duration) error {
 	})
 }
 
-func (u *User) OwnRWX(path string) error {
-	if err := os.Chmod(path, 0700); err != nil {
+func (u *User) OwnMod(path string, mode os.FileMode) error {
+	if err := os.Chmod(path, mode); err != nil {
 		return err
 	}
 	return os.Chown(path, int(u.Uid), int(u.Gid))
+}
+
+func (u *User) OwnModDir(dir string, mode os.FileMode) error {
+	if err := exec.Command("chmod", "-R", strconv.FormatInt(int64(mode), 8), dir).Run(); err != nil {
+		return err
+	}
+	return exec.Command("chown", "-R", dir).Run()
 }

@@ -1,8 +1,12 @@
 package base
 
 import (
+	"context"
 	"github.com/go-resty/resty/v2"
+	"sync"
 )
 
-// HttpClient means http client
 var HttpClient *resty.Client
+
+var BaseContext, Close = context.WithCancel(context.Background())
+var QuitWG = sync.WaitGroup{}

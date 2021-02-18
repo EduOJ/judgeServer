@@ -67,7 +67,7 @@ func TestMain(m *testing.M) {
 	ts := httptest.NewServer(http.HandlerFunc(testServerRoute))
 	base.HttpClient = resty.New().SetHostURL(ts.URL)
 	viper.Set("path.scripts", "../test_file/scripts")
-	viper.Set("path.runs", "../test_file/runs")
+	viper.Set("path.test_cases", "../test_file/test_cases")
 	ret := m.Run()
 	os.Exit(ret)
 }

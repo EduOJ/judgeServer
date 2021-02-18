@@ -1,9 +1,14 @@
 package base
 
 import (
+	"bufio"
+	"bytes"
 	"github.com/pkg/errors"
+	"io"
 	"time"
 )
+
+var ErrNotAvailable = errors.New("resource is not available for now")
 
 // run with timeout when the timeout duration isn't zero
 // run without timeout when the timeout duration is zero
@@ -23,4 +28,24 @@ func WithTimeout(timeout time.Duration, f func() error) error {
 	case <-time.After(timeout):
 		return errors.New("timeout")
 	}
+}
+
+type StrippedReader struct {
+	Inner *bufio.Reader
+	buf   bytes.Buffer
+}
+
+func (r *StrippedReader) Read(p []byte) (int, error) {
+	for r.buf.Len() < len(p) {
+		ch, _, err := r.Inner.ReadRune()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return 0, err
+		}
+		if ch != ' ' && ch != '\n' {
+			r.buf.WriteRune(ch)
+		}
+	}
+	return r.buf.Read(p)
 }

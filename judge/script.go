@@ -14,14 +14,22 @@ import (
 var ScriptLock sync.Mutex
 
 func RunScript(name string, latestUpdateTime time.Time) (err error) {
-	err = ensureLatestScript(name, latestUpdateTime)
+	err = EnsureLatestScript(name, latestUpdateTime)
 	if err != nil {
 		return
 	}
 	return runScript(name)
 }
 
-func ensureLatestScript(name string, latestUpdateTime time.Time) error {
+func RunScriptWithOutput(name string, latestUpdateTime time.Time) (out string, err error) {
+	err = EnsureLatestScript(name, latestUpdateTime)
+	if err != nil {
+		return
+	}
+	return runScriptWithOutput(name)
+}
+
+func EnsureLatestScript(name string, latestUpdateTime time.Time) error {
 	ScriptLock.Lock()
 	defer ScriptLock.Unlock()
 	ok, err := checkScript(name, latestUpdateTime)
@@ -83,4 +91,14 @@ func runScript(name string) error {
 	}
 
 	return nil
+}
+
+func runScriptWithOutput(name string) (string, error) {
+	cmd := exec.Command("./run")
+	cmd.Dir = path.Join(viper.GetString("path.scripts"), name)
+	b, err := cmd.Output()
+	if err != nil {
+		return "", errors.Wrap(err, "could not run script")
+	}
+	return string(b), nil
 }

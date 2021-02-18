@@ -26,11 +26,11 @@ func checkFileNonExist(t *testing.T, path string) {
 
 func TestMain(m *testing.M) {
 	config := `user:
-  compile: compile_user
+  compile: build_user
   run: run_user
 path:
   scripts: ../test_file/scripts
-  runs: ../test_file/runs
+  test_cases: ../test_file/test_cases
   temp: ../test_file/temp
 `
 	viper.SetConfigType("yml")
@@ -42,11 +42,11 @@ path:
 		panic(errors.Wrap(err, "could not create temp dir"))
 	}
 	viper.Set("path.scripts", dir)
-	dir, err = ioutil.TempDir("", "eduoj_judger_test_runs_*")
+	dir, err = ioutil.TempDir("", "eduoj_judger_test_test_cases_*")
 	if err != nil {
 		panic(errors.Wrap(err, "could not create temp dir"))
 	}
-	viper.Set("path.runs", dir)
+	viper.Set("path.test_cases", dir)
 	ret := m.Run()
 	os.Exit(ret)
 }

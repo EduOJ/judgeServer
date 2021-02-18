@@ -1,15 +1,24 @@
 backend:
   endpoint: http://127.0.0.1:8080/judger
 user:
-  compile: compile_user
+  compile: build_user
   run: run_user
 log:
   log_path: ./test.log
-  judger_log_path: ./test_judger.log
+  sandbox_log_path: ./test_judger.log
 auth:
   name: write_judger_name_here
   token: write_judger_token_here
 path:
   scripts: ./scripts
-  runs: ./runs
+  test_cases: ./test_cases
   temp: ./temp
+judge:
+  build:
+    max_cpu_time: 600000
+    max_real_time: 600000
+    max_memory: 104857600
+    max_stack: 104857600
+  run:
+    max_output_size: 104857600
+thread_count: 4

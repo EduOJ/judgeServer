@@ -2,9 +2,9 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"github.com/suntt2019/EduOJJudger/judge"
 	"os/user"
-	"time"
 )
 
 func main() {
@@ -21,6 +21,5 @@ func main() {
 	initHttpClient()
 	initUsers()
 
-	// for test
-	log.Error(judge.RunScript("test_script", time.Now()))
+	judge.Work(viper.GetInt("thread_count"))
 }
