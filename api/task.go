@@ -45,7 +45,7 @@ func (t *Task) GenerateFilePath() {
 type getTaskResponse struct {
 	Message string      `json:"message"`
 	Error   interface{} `json:"error"`
-	Data    Task        `json:"task"`
+	Data    Task        `json:"data"`
 }
 
 func GetTask() (*Task, error) {

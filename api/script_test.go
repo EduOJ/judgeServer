@@ -28,7 +28,7 @@ func TestGetScript(t *testing.T) {
 		t.Parallel()
 		_, err := GetScript("test_get_script_NON_EXISTING")
 		assert.NotNil(t, err)
-		assert.Equal(t, `unexpected response: <?xml version="1.0" encoding="UTF-8"?>`+
+		assert.Equal(t, `could get file: unexpected response: <?xml version="1.0" encoding="UTF-8"?>`+
 			"<Error><Code>NoSuchKey</Code>"+
 			"<Message>The specified key does not exist.</Message>"+
 			"</Error>", err.Error())

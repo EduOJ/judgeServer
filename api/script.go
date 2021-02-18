@@ -3,9 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/suntt2019/EduOJJudger/base"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path"
 )
@@ -17,17 +15,9 @@ func GetScript(name string) (*os.File, error) {
 	if err != nil {
 		return f, errors.Wrap(err, "could not create temp file")
 	}
-	resp, err := base.HttpClient.R().SetOutput(f.Name()).
-		Get(path.Join("script", name))
+	err = GetFile(path.Join("script", name), f.Name())
 	if err != nil {
-		return nil, errors.Wrap(err, "could not send request")
+		return nil, errors.Wrap(err, "could get file")
 	}
-	if resp.StatusCode() == http.StatusOK {
-		return f, nil
-	}
-	body, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not read response body")
-	}
-	return nil, errors.New("unexpected response: " + string(body))
+	return f, nil
 }

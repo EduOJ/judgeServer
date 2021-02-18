@@ -1,60 +1,80 @@
 package api
 
 import (
+	"encoding/json"
 	"github.com/go-resty/resty/v2"
-	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"github.com/suntt2019/EduOJJudger/base"
+	"hash/fnv"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
-func testServerRoute(wr http.ResponseWriter, r *http.Request) {
-	index := strings.Index(r.RequestURI[1:], "/")
-	if index == -1 {
-		panic("could not find the second '/' to find out service name")
+func hashStringToTime(s string) time.Time {
+	h := fnv.New32()
+	if _, err := h.Write([]byte(s)); err != nil {
+		panic(err)
 	}
-	uri := r.RequestURI[index+2:]
-	switch r.RequestURI[1 : index+1] {
+	return time.Unix(int64(h.Sum32()), 0)
+}
+
+func readAndUnmarshal(reader io.Reader, out interface{}) error {
+	b, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(b, out)
+}
+
+func marshalAndWrite(writer io.Writer, in interface{}) error {
+	b, err := json.Marshal(in)
+	if err != nil {
+		return err
+	}
+	_, err = writer.Write(b)
+	return err
+}
+
+func testServerRoute(wr http.ResponseWriter, r *http.Request) {
+	u, err := url.Parse(r.RequestURI)
+	if err != nil {
+		panic(err)
+	}
+	index := strings.Index(u.Path[1:], "/")
+	var service, uri string
+	if index == -1 {
+		service = u.Path[1:]
+		uri = ""
+	} else {
+		service = u.Path[1 : index+1]
+		uri = u.Path[index+2:]
+	}
+	switch service {
 	case "echoURI":
 		echoURI(wr, uri)
 	case "fileURI":
 		fileURI(wr, uri)
 	case "script":
 		script(wr, r, uri)
+	case "task":
+		task(wr, u.Query())
+	case "run":
+		run(wr, r, uri)
 	default:
-		panic(`invalid service for test server: "` + r.RequestURI[1:index+1] + `"`)
+		panic(`invalid service for test server: "` + service + `"`)
 	}
 
 }
 
 func echoURI(wr http.ResponseWriter, uri string) {
 	if _, err := wr.Write([]byte(uri)); err != nil {
-		panic(err)
-	}
-}
-
-func fileURI(wr http.ResponseWriter, uri string) {
-	content := strings.Split(uri, "/")
-	if len(content) != 2 {
-		panic("unexpected content count")
-	}
-	if strings.Contains(content[1], "NON_EXISTING") {
-		wr.WriteHeader(http.StatusNotFound)
-		_, err := wr.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>` +
-			"<Error><Code>NoSuchKey</Code>" +
-			"<Message>The specified key does not exist.</Message>" +
-			"</Error>"))
-		if err != nil {
-			panic(errors.Wrap(err, "could not write response"))
-		}
-		return
-	}
-	wr.Header().Set("Content-Disposition", `inline; filename="`+content[0]+`"`) // filename
-	if _, err := wr.Write([]byte(content[1])); err != nil {
 		panic(err)
 	}
 }

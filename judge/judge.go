@@ -41,12 +41,12 @@ func Work(threadCount int) {
 	<-s
 	go func() {
 		<-s
-		log.Fatal("Force quitting")
+		log.Error("Force quitting")
 		os.Exit(-1)
 	}()
 
-	log.Fatal("Server closing.")
-	log.Fatal("Hit ctrl+C again to force quit.")
+	log.Error("Server closing.")
+	log.Error("Hit ctrl+C again to force quit.")
 	base.Close()
 	base.QuitWG.Wait()
 }
@@ -177,7 +177,7 @@ func build(task *api.Task) error {
 		return errors.Wrap(err, "could not set permission for code")
 	}
 
-	if err = EnsureLatestScript(task.Language.BuildScriptName, task.Language.BuildScript.UpdatedAt); err != nil {
+	if err = EnsureLatestScript(task.Language.BuildScript.Name, task.Language.BuildScript.UpdatedAt); err != nil {
 		return errors.Wrap(err, "could not ensure build script latest")
 	}
 
@@ -189,7 +189,7 @@ func build(task *api.Task) error {
 		MaxProcessNumber:     -1,
 		MaxOutputSize:        -1,
 		MemoryLimitCheckOnly: 0,
-		ExePath:              path.Join(viper.GetString("path.scripts"), task.Language.BuildScriptName),
+		ExePath:              path.Join(viper.GetString("path.scripts"), task.Language.BuildScript.Name),
 		InputPath:            "",
 		OutputPath:           "",
 		ErrorPath:            "",

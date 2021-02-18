@@ -8,7 +8,6 @@ require (
 	github.com/klauspost/cpuid/v2 v2.0.3 // indirect
 	github.com/labstack/echo/v4 v4.2.0 // indirect
 	github.com/leoleoasd/EduOJBackend v0.0.0-20210209123950-8c967968cbdc
-	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/minio/minio-go/v7 v7.0.9 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
