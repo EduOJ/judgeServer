@@ -22,7 +22,7 @@ func hashStringToTime(s string) time.Time {
 	if _, err := h.Write([]byte(s)); err != nil {
 		panic(err)
 	}
-	return time.Unix(int64(h.Sum32()), 0)
+	return time.Unix(int64(h.Sum32()), 0).UTC()
 }
 
 func readAndUnmarshal(reader io.Reader, out interface{}) error {

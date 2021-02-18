@@ -3,8 +3,10 @@ package base
 import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestRemoveCache(t *testing.T) {
@@ -22,4 +24,25 @@ func TestRemoveCache(t *testing.T) {
 	assert.True(t, os.IsNotExist(err))
 	_, err = os.Stat(viper.GetString("path.test_cases"))
 	assert.True(t, os.IsNotExist(err))
+}
+
+func TestIsFileLatest(t *testing.T) {
+	t.Parallel()
+
+	f, err := ioutil.TempFile("", "")
+	assert.NoError(t, err)
+	stat, err := os.Stat(f.Name())
+	assert.NoError(t, err)
+
+	t.Run("UpToDate", func(t *testing.T) {
+		ok, err := IsFileLatest(f.Name(), stat.ModTime().Add(-1*time.Second))
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("Expired", func(t *testing.T) {
+		ok, err := IsFileLatest(f.Name(), stat.ModTime().Add(time.Second))
+		assert.NoError(t, err)
+		assert.False(t, ok)
+	})
 }
