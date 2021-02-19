@@ -7,33 +7,38 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"github.com/suntt2019/EduOJJudger/base"
-	judger "github.com/suntt2019/Judger"
 	"net/http"
 	"path"
 	"time"
 )
 
+var ErrNotAvailable = errors.New("resource is not available for now")
+
 type Task struct {
-	RunID              uint            `json:"run_id"`
-	Language           models.Language `json:"language"`
-	TestCaseID         uint            `json:"test_case_id"`
-	InputFile          string          `json:"input_file"`  // pre-signed url
-	OutputFile         string          `json:"output_file"` // same as above
-	InputFilePath      string
-	OutputFilePath     string
-	CodeFile           string        `json:"code_file"`
-	TestCaseUpdatedAt  time.Time     `json:"test_case_updated_at"`
+	RunID    uint            `json:"run_id"`
+	Language models.Language `json:"language"`
+
+	TestCaseID        uint      `json:"test_case_id"`
+	InputFile         string    `json:"input_file"`  // pre-signed url
+	OutputFile        string    `json:"output_file"` // same as above
+	TestCaseUpdatedAt time.Time `json:"test_case_updated_at"`
+
+	CodeFile string `json:"code_file"`
+
+	InputFilePath     string
+	OutputFilePath    string
+	RunFilePath       string
+	BuildOutputPath   string
+	CompareOutputPath string
+	JudgeDir          string
+
 	MemoryLimit        uint64        `json:"memory_limit"`        // Byte
 	TimeLimit          uint          `json:"time_limit"`          // ms
 	BuildArg           string        `json:"compile_environment"` // E.g.  O2=false
 	CompareScript      models.Script `json:"compare_script"`
-	JudgeDir           string
-	RunFilePath        string
 	TimeUsed           uint
 	MemoryUsed         uint
 	OutputStrippedHash string
-	CompareResult      bool
-	JudgeResult        judger.JudgeResult
 }
 
 func (t *Task) GenerateFilePath() {
@@ -57,7 +62,7 @@ func GetTask() (*Task, error) {
 		return nil, errors.Wrap(err, "could not unmarshal response")
 	}
 	if httpResp.StatusCode() == http.StatusNotFound && resp.Message == "NOT_FOUND" {
-		return nil, base.ErrNotAvailable
+		return nil, ErrNotAvailable
 	}
 	if httpResp.StatusCode() == http.StatusOK && resp.Message == "SUCCESS" {
 		resp.Data.GenerateFilePath()

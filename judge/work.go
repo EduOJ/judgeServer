@@ -2,7 +2,9 @@ package judge
 
 import (
 	"bufio"
+	"context"
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"github.com/leoleoasd/EduOJBackend/app/request"
 	"github.com/pkg/errors"
@@ -11,8 +13,10 @@ import (
 	"github.com/suntt2019/EduOJJudger/api"
 	"github.com/suntt2019/EduOJJudger/base"
 	"github.com/suntt2019/Judger"
+	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path"
 	"strconv"
@@ -22,10 +26,25 @@ import (
 )
 
 var testCaseLocks sync.Map
-var languageToSeccompRuleName = map[string]string{
-	"C":   "c_cpp",
-	"C++": "c_cpp",
+
+func getSeccompRuleName(language string) (rules string) {
+	switch language {
+	case "c":
+		rules = "c_cpp"
+	case "cpp":
+		rules = "c_cpp"
+	default:
+		rules = "general"
+	}
+	return
 }
+
+var ErrBuildError = errors.New("build error")
+var ErrTLE = errors.New("time limit exceeded")
+var ErrMLE = errors.New("memory limit exceeded")
+var ErrRTE = errors.New("runtime error")
+var ErrDSC = errors.New("dangerous system call")
+var ErrWA = errors.New("wrong answer")
 
 func Work(threadCount int) {
 	base.QuitWG.Add(threadCount)
@@ -59,8 +78,8 @@ func work() {
 	}()
 	for !stop {
 		var task *api.Task
-		err := base.ErrNotAvailable
-		for err == base.ErrNotAvailable {
+		err := api.ErrNotAvailable
+		for err == api.ErrNotAvailable {
 			task, err = api.GetTask()
 		}
 		if err != nil {
@@ -82,27 +101,29 @@ func generateRequest(task *api.Task, judgementError error) *request.UpdateRunReq
 		OutputStrippedHash: task.OutputStrippedHash,
 		Message:            "",
 	}
-	switch task.JudgeResult {
-	case judger.SUCCESS:
-		if task.CompareResult {
-			req.Status = "ACCEPTED"
-		} else {
-			req.Status = "WRONG_ANSWER"
-		}
-	case judger.CPU_TIME_LIMIT_EXCEEDED:
-		req.Status = "TIME_LIMIT_EXCEEDED"
-	case judger.REAL_TIME_LIMIT_EXCEEDED:
-		req.Status = "TIME_LIMIT_EXCEEDED"
-	case judger.MEMORY_LIMIT_EXCEEDED:
-		req.Status = "MEMORY_LIMIT_EXCEEDED"
-	case judger.RUNTIME_ERROR:
-		req.Status = "RUNTIME_ERROR"
-	default:
-		if judgementError != nil {
-			judgementError = errors.New(fmt.Sprintf("unexpected running result: %d", task.JudgeResult))
-		}
-	}
-	if judgementError != nil {
+	//switch task.JudgeResult {
+	//case judger.SUCCESS:
+	//	if task.CompareResult {
+	//		req.Status = "ACCEPTED"
+	//	} else {
+	//		req.Status = "WRONG_ANSWER"
+	//	}
+	//case judger.CPU_TIME_LIMIT_EXCEEDED:
+	//	req.Status = "TIME_LIMIT_EXCEEDED"
+	//case judger.REAL_TIME_LIMIT_EXCEEDED:
+	//	req.Status = "TIME_LIMIT_EXCEEDED"
+	//case judger.MEMORY_LIMIT_EXCEEDED:
+	//	req.Status = "MEMORY_LIMIT_EXCEEDED"
+	//case judger.RUNTIME_ERROR:
+	//	req.Status = "RUNTIME_ERROR"
+	//default:
+	//	if judgementError != nil {
+	//		judgementError = errors.New(fmt.Sprintf("unexpected running result: %d", task.JudgeResult))
+	//	}
+	//}
+	if errors.Is(judgementError, ErrBuildError) {
+		req.Status = "COMPILE_ERROR"
+	} else if judgementError != nil {
 		req.Status = "JUDGEMENT_FAILED"
 		req.Message = judgementError.Error()
 	}
@@ -119,15 +140,42 @@ func judge(task *api.Task) error {
 		return errors.Wrap(err, "could not create temp directory")
 	}
 
+	buildOutput, err := ioutil.TempFile("", "eduoj_judger_build_output_*")
+	if err != nil {
+		return errors.Wrap(err, "could not create temp file for build output")
+	}
+	task.BuildOutputPath = buildOutput.Name()
+	if err := buildOutput.Close(); err != nil {
+		return errors.Wrap(err, "could not close build output")
+	}
+
+	runFile, err := ioutil.TempFile("", "eduoj_judger_run_file_*")
+	if err != nil {
+		return errors.Wrap(err, "could not create temp file")
+	}
+	task.RunFilePath = runFile.Name()
+	if err := runFile.Close(); err != nil {
+		return errors.Wrap(err, "could not close run file")
+	}
+
+	compareOutput, err := ioutil.TempFile("", "eduoj_judger_compare_output_*")
+	if err != nil {
+		return errors.Wrap(err, "could not create temp file for compare output")
+	}
+	task.CompareOutputPath = compareOutput.Name()
+	if err := buildOutput.Close(); err != nil {
+		return errors.Wrap(err, "could not close compare output")
+	}
+
 	if err = api.GetFile(task.CodeFile, path.Join(task.JudgeDir, "code")); err != nil {
 		return errors.Wrap(err, "could not get input file")
 	}
 
-	if err = build(task); err != nil {
+	if err = Build(task); err != nil {
 		return errors.Wrap(err, "could not build user program")
 	}
 
-	if err = run(task); err != nil {
+	if err = Run(task); err != nil {
 		return errors.Wrap(err, "could not run user program")
 	}
 
@@ -135,9 +183,9 @@ func judge(task *api.Task) error {
 		return errors.Wrap(err, "could not hash output")
 	}
 
-	if task.CompareResult, err = compare(task); err != nil {
-		return errors.Wrap(err, "could not compare output")
-	}
+	//if task.CompareResult, err = compare(task); err != nil {
+	//	return errors.Wrap(err, "could not compare output")
+	//}
 
 	return nil
 }
@@ -174,97 +222,90 @@ func getTestCase(task *api.Task) error {
 	return nil
 }
 
-func build(task *api.Task) error {
+func Build(task *api.Task) error {
 	var err error
-	if err = base.BuildUser.OwnMod(task.JudgeDir, 0600); err != nil {
+	if err = exec.Command("chmod", "-R", "777", task.JudgeDir).Run(); err != nil {
 		return errors.Wrap(err, "could not set permission for judge directory")
-	}
-
-	if err = base.BuildUser.OwnMod(path.Join(task.JudgeDir, "code"), 0400); err != nil {
-		return errors.Wrap(err, "could not set permission for code")
 	}
 
 	if err = EnsureLatestScript(task.Language.BuildScript.Name, task.Language.BuildScript.UpdatedAt); err != nil {
 		return errors.Wrap(err, "could not ensure build script latest")
 	}
 
-	result, err := judger.Run(judger.Config{
-		MaxCPUTime:           viper.GetInt("judge.build.max_cpu_time"),
-		MaxRealTime:          viper.GetInt("judge.build.max_real_time"),
-		MaxMemory:            viper.GetInt32("judge.build.max_memory"),
-		MaxStack:             viper.GetInt32("judge.build.max_stack"),
-		MaxProcessNumber:     -1,
-		MaxOutputSize:        -1,
-		MemoryLimitCheckOnly: 0,
-		ExePath:              path.Join(viper.GetString("path.scripts"), task.Language.BuildScript.Name),
-		InputPath:            "",
-		OutputPath:           "",
-		ErrorPath:            "",
-		Args: append([]string{
-			path.Join(task.JudgeDir, "code"),
-		}, strings.Split(task.BuildArg, ",")...),
-		Env:             nil,
-		LogPath:         viper.GetString("log.sandbox_log_path"),
-		SeccompRuleName: "general",
-		Uid:             base.BuildUser.Uid,
-		Gid:             base.BuildUser.Gid,
-	})
+	ctx, cancel := context.WithTimeout(context.Background(), viper.GetDuration("judge.build.max_time"))
+	defer cancel()
+	cmd := exec.CommandContext(ctx, path.Join(viper.GetString("path.scripts"), task.Language.BuildScript.Name, "run"),
+		append([]string{task.JudgeDir}, strings.Split(task.BuildArg, " ")...)...)
+
+	buildOutput, err := os.OpenFile(task.BuildOutputPath, os.O_WRONLY, 0)
 	if err != nil {
-		return errors.Wrap(err, "fail to build user program")
+		return errors.Wrap(err, "could not open build output file")
 	}
-	if result.ExitCode != 0 {
-		return errors.New(fmt.Sprintf("fail to build user program, build script returns %d", result.ExitCode))
+	defer buildOutput.Close()
+	cmd.Stdout = buildOutput
+	cmd.Stderr = buildOutput
+
+	if err := base.BuildUser.Run(cmd); err != nil {
+		var exitError *exec.ExitError
+		if errors.As(err, &exitError) {
+			return ErrBuildError
+		}
+		return errors.Wrap(err, "fail to build user program")
 	}
 	return nil
 }
 
-func run(task *api.Task) error {
-	runFile, err := ioutil.TempFile("", "eduoj_judger_run_file_*")
-	if err != nil {
-		return errors.Wrap(err, "could not create temp file")
-	}
-	task.RunFilePath = runFile.Name()
-	defer runFile.Close()
+func Run(task *api.Task) error {
 
-	if err = base.BuildUser.OwnModDir(task.JudgeDir, 0700); err != nil {
-		return errors.Wrap(err, "could not set permission for judge directory")
+	var runScriptOutput string
+	var err error
+	if runScriptOutput, err = RunScriptWithOutput(task.Language.RunScript.Name, task.Language.RunScript.UpdatedAt, task.JudgeDir); err != nil {
+		return errors.Wrap(err, "could not ensure run script latest")
 	}
-
-	if err = base.RunUser.OwnMod(task.InputFilePath, 0400); err != nil {
-		return errors.Wrap(err, "could not set permission for input file")
-	}
-
-	if err = base.RunUser.OwnMod(runFile.Name(), 0600); err != nil {
-		return errors.Wrap(err, "could not set permission for run file")
-	}
+	RunCommand := strings.Split(runScriptOutput, " ")
 
 	result, err := judger.Run(judger.Config{
 		MaxCPUTime:           int(task.TimeLimit),
-		MaxRealTime:          int(task.TimeLimit), // TODO: real time
+		MaxRealTime:          int(task.TimeLimit),
 		MaxMemory:            int32(task.MemoryLimit),
-		MaxStack:             int32(task.MemoryLimit), // TODO: Stack size
+		MaxStack:             int32(task.MemoryLimit),
 		MaxProcessNumber:     -1,
 		MaxOutputSize:        viper.GetInt32("judge.run.max_output_size"),
 		MemoryLimitCheckOnly: 0,
-		ExePath:              path.Join(task.JudgeDir, "code"),
+		ExePath:              RunCommand[0],
 		InputPath:            task.InputFilePath,
-		OutputPath:           task.OutputFilePath,
-		ErrorPath:            "",
-		Args:                 nil,
-		Env:                  nil,
+		OutputPath:           task.RunFilePath,
+		ErrorPath:            os.DevNull,
+		Args:                 RunCommand[1:],
+		Env:                  []string{},
 		LogPath:              viper.GetString("log.sandbox_log_path"),
-		SeccompRuleName:      languageToSeccompRuleName[task.Language.Name],
-		Uid:                  base.BuildUser.Uid,
-		Gid:                  base.BuildUser.Gid,
+		SeccompRuleName:      getSeccompRuleName(task.Language.Name),
+		Uid:                  base.RunUser.Uid,
+		Gid:                  base.RunUser.Gid,
 	})
+
 	if err != nil {
 		return errors.Wrap(err, "fail to run user program")
 	}
 
-	task.TimeUsed = uint(result.CPUTime) // TODO: real time
+	task.TimeUsed = uint(result.CPUTime)
 	task.MemoryUsed = uint(result.Memory)
-	task.JudgeResult = result.Result
+	if syscall.Signal(result.Signal) == syscall.SIGSYS {
+		return ErrDSC
+	}
 
+	switch result.Result {
+	case judger.CPU_TIME_LIMIT_EXCEEDED:
+		fallthrough
+	case judger.REAL_TIME_LIMIT_EXCEEDED:
+		return ErrTLE
+	case judger.MEMORY_LIMIT_EXCEEDED:
+		return ErrMLE
+	case judger.RUNTIME_ERROR:
+		return ErrRTE
+	case judger.SYSTEM_ERROR:
+		return errors.New("system error")
+	}
 	return nil
 }
 
@@ -274,27 +315,41 @@ func hashOutput(task *api.Task) error {
 		return errors.Wrap(err, "could not open run file")
 	}
 	defer f.Close()
-	outBytes, err := ioutil.ReadAll(&base.StrippedReader{Inner: bufio.NewReader(f)})
+	hh := sha256.New()
+	_, err = io.Copy(hh, &base.StrippedReader{Inner: bufio.NewReader(f)})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not open run file")
 	}
-	h := sha256.Sum256(outBytes)
-	task.OutputStrippedHash = string(h[:])
+	task.OutputStrippedHash = hex.EncodeToString(hh.Sum(nil))
 	return nil
 }
 
-func compare(task *api.Task) (accepted bool, err error) {
-	out, err := RunScriptWithOutput(task.CompareScript.Name, task.CompareScript.UpdatedAt,
-		task.RunFilePath, task.OutputFilePath)
+func Compare(task *api.Task) error {
+	err := EnsureLatestScript(task.CompareScript.Name, task.CompareScript.UpdatedAt)
 	if err != nil {
-		return false, errors.Wrap(err, "could not run compare script "+task.CompareScript.Name)
+		return errors.Wrap(err, "could not ensure compare script latest")
 	}
-	switch out {
-	case "ACCEPTED\n":
-		return true, nil
-	case "WRONG_ANSWER\n":
-		return false, nil
-	default:
-		return false, errors.New("unexpected compare script output: " + out)
+
+	cmd := exec.Command("./run", task.RunFilePath, task.OutputFilePath, task.JudgeDir, task.InputFilePath)
+	cmd.Dir = path.Join(viper.GetString("path.scripts"), task.CompareScript.Name)
+	compareOutput, err := os.OpenFile(task.CompareOutputPath, os.O_WRONLY, 0)
+	if err != nil {
+		return errors.Wrap(err, "could not open compare output file")
 	}
+	defer compareOutput.Close()
+	cmd.Stdout = compareOutput
+	cmd.Stderr = compareOutput
+
+	if err := cmd.Run(); err != nil {
+		var exitError *exec.ExitError
+		if errors.As(err, &exitError) {
+			if c := err.(*exec.ExitError).ExitCode(); c == 1 {
+				return ErrWA
+			} else {
+				return errors.New(fmt.Sprintf("unexpected compare script output: %d", c))
+			}
+		}
+		return errors.Wrap(err, "could not run compare script")
+	}
+	return nil
 }

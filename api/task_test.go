@@ -5,7 +5,6 @@ import (
 	"github.com/leoleoasd/EduOJBackend/database/models"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"github.com/suntt2019/EduOJJudger/base"
 	"net/http"
 	"net/url"
 	"path"
@@ -154,8 +153,6 @@ func TestGetTask(t *testing.T) {
 			TimeUsed:           0,
 			MemoryUsed:         0,
 			OutputStrippedHash: "",
-			CompareResult:      false,
-			JudgeResult:        0,
 		}, task)
 		// debugging CI
 		assert.Equal(t, models.Script{
@@ -176,6 +173,6 @@ func TestGetTask(t *testing.T) {
 		// Not Parallel
 		taskStatus = "NotFound"
 		_, err := GetTask()
-		assert.Equal(t, base.ErrNotAvailable, err)
+		assert.Equal(t, ErrNotAvailable, err)
 	})
 }

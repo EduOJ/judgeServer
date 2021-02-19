@@ -1,6 +1,7 @@
 package judge
 
 import (
+	"encoding/hex"
 	"github.com/leoleoasd/EduOJBackend/database/models"
 	"github.com/minio/sha256-simd"
 	"github.com/spf13/viper"
@@ -89,7 +90,7 @@ func TestHashOutput(t *testing.T) {
 	assert.NoError(t, err)
 
 	h := sha256.Sum256([]byte("test_hash_run_file_content"))
-	assert.Equal(t, string(h[:]), task.OutputStrippedHash)
+	assert.Equal(t, hex.EncodeToString(h[:]), task.OutputStrippedHash)
 }
 
 func TestCompare(t *testing.T) {
@@ -100,23 +101,23 @@ func TestCompare(t *testing.T) {
 	err = os.Chmod(r.Name(), 0777)
 	assert.NoError(t, err)
 	_, err = r.WriteString(`#!/bin/bash
-ret=$(diff $1 $2)
-content1=$(cat $1)
-#content2=$(cat $2)
-#echo 0:$0
-#echo 1:$1
-#echo 2:$2
-#echo c1:$content1
-#echo c2:$content2
+#echo 1
+#echo $1
+#echo $2
+#echo $(cat $1)
+#echo $(cat $2)
 
+ret=$(diff $1 $2)
+# echo ==[$ret]==
+content1=$(cat $1)
 if [ "$content1" == "OTHER_OUTPUT" ]
 then
-  echo "OTHER_OUTPUT"
+  exit 2
 elif [ "$ret" == "" ]
 then
-  echo "ACCEPTED"
+  exit 0
 else
-  echo "WRONG_ANSWER"
+  exit 1
 fi
 `)
 	assert.NoError(t, err)
@@ -135,6 +136,11 @@ fi
 		err = createAndWrite(path.Join(viper.GetString("path.test_cases"), "test_compare_script_same", "out"), "test_compare_same")
 		assert.NoError(t, err)
 
+		compareOutputFile, err := ioutil.TempFile("", "eduoj_judger_test_compare_*")
+		assert.NoError(t, err)
+		err = compareOutputFile.Close()
+		assert.NoError(t, err)
+
 		task := api.Task{
 			OutputFilePath: path.Join(viper.GetString("path.test_cases"), "test_compare_script_same", "out"),
 			RunFilePath:    runFile.Name(),
@@ -142,10 +148,10 @@ fi
 				Name:      "test_compare_script",
 				UpdatedAt: time.Now().Add(-1 * time.Hour),
 			},
+			CompareOutputPath: compareOutputFile.Name(),
 		}
-		same, err := compare(&task)
+		err = Compare(&task)
 		assert.NoError(t, err)
-		assert.True(t, same)
 	})
 
 	t.Run("Different", func(t *testing.T) {
@@ -160,6 +166,11 @@ fi
 		err = createAndWrite(path.Join(viper.GetString("path.test_cases"), "test_compare_script_different", "out"), "test_compare_output")
 		assert.NoError(t, err)
 
+		compareOutputFile, err := ioutil.TempFile("", "eduoj_judger_test_compare_*")
+		assert.NoError(t, err)
+		err = compareOutputFile.Close()
+		assert.NoError(t, err)
+
 		task := api.Task{
 			OutputFilePath: path.Join(viper.GetString("path.test_cases"), "test_compare_script_different", "out"),
 			RunFilePath:    runFile.Name(),
@@ -167,22 +178,27 @@ fi
 				Name:      "test_compare_script",
 				UpdatedAt: time.Now().Add(-1 * time.Hour),
 			},
+			CompareOutputPath: compareOutputFile.Name(),
 		}
-		same, err := compare(&task)
-		assert.NoError(t, err)
-		assert.False(t, same)
+		err = Compare(&task)
+		assert.Equal(t, ErrWA, err)
 	})
 
 	t.Run("OtherOutput", func(t *testing.T) {
 		t.Parallel()
 		runFile, err := ioutil.TempFile("", "eduoj_judger_test_compare_*")
 		assert.NoError(t, err)
-		_, err = runFile.WriteString("test_compare_other_output_run")
+		_, err = runFile.WriteString("OTHER_OUTPUT")
 		assert.NoError(t, err)
 		err = runFile.Close()
 		assert.NoError(t, err)
 
-		err = createAndWrite(path.Join(viper.GetString("path.test_cases"), "test_compare_script_other_output", "out"), "OTHER_OUTPUT")
+		err = createAndWrite(path.Join(viper.GetString("path.test_cases"), "test_compare_script_other_output", "out"), "test_compare_other_output")
+		assert.NoError(t, err)
+
+		compareOutputFile, err := ioutil.TempFile("", "eduoj_judger_test_compare_*")
+		assert.NoError(t, err)
+		err = compareOutputFile.Close()
 		assert.NoError(t, err)
 
 		task := api.Task{
@@ -192,9 +208,10 @@ fi
 				Name:      "test_compare_script",
 				UpdatedAt: time.Now().Add(-1 * time.Hour),
 			},
+			CompareOutputPath: compareOutputFile.Name(),
 		}
-		same, err := compare(&task)
-		assert.NoError(t, err)
-		assert.False(t, same)
+		err = Compare(&task)
+		assert.NotNil(t, err)
+		assert.Equal(t, "unexpected compare script output: 2", err.Error())
 	})
 }

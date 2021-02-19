@@ -58,10 +58,3 @@ func (u *User) OwnMod(path string, mode os.FileMode) error {
 	}
 	return os.Chown(path, int(u.Uid), int(u.Gid))
 }
-
-func (u *User) OwnModDir(dir string, mode os.FileMode) error {
-	if err := exec.Command("chmod", "-R", strconv.FormatInt(int64(mode), 8), dir).Run(); err != nil {
-		return err
-	}
-	return exec.Command("chown", "-R", dir).Run()
-}
