@@ -374,7 +374,7 @@ func TestRun(t *testing.T) { // TODO: fix race bug
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/Success"),
 			TimeLimit:   1000,
-			MemoryLimit: 10240000,
+			MemoryLimit: 50000000,
 			Language: models.Language{
 				RunScript: &models.Script{
 					Name:      "test_run_success",
@@ -539,7 +539,7 @@ echo -n $1/a.out
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/RuntimeError"),
 			TimeLimit:   1000,
-			MemoryLimit: 10240000,
+			MemoryLimit: 50000000,
 			Language: models.Language{
 				RunScript: &models.Script{
 					Name:      "test_run_runtime_error",
@@ -663,7 +663,7 @@ echo -n $1/a.out
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/SystemError"),
 			TimeLimit:   1000,
-			MemoryLimit: 10240000,
+			MemoryLimit: 50000000,
 			Language: models.Language{
 				RunScript: &models.Script{
 					Name:      "test_run_system_error",
@@ -678,11 +678,11 @@ echo -n $1/a.out
 using namespace std;
 
 int main(){
-   char str[100];
-   cin>>str;
-   cout<<"test_run, input=";
-   cout<<str<<endl;
-   return 0;
+  char str[100];
+  cin>>str;
+  cout<<"test_run, input=";
+  cout<<str<<endl;
+  return 0;
 }
 `)
 		assert.NoError(t, err)
