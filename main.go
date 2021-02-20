@@ -21,7 +21,7 @@ func main() {
 	initHttpClient()
 	initUsers()
 
-	judge.Work(viper.GetInt("thread_count"))
+	judge.Start(viper.GetInt("thread_count"))
 
 	//task := api.Task{
 	//	RunID:              0,
@@ -40,7 +40,7 @@ func main() {
 	//			Name:      "cpp_run",
 	//			Filename:  "cpp_run",
 	//			CreatedAt: time.Time{},
-	//			UpdatedAt: time.Time{},
+	//			UpdatedAt: time.Now(),
 	//		},
 	//		CreatedAt:        time.Time{},
 	//		UpdatedAt:        time.Time{},
@@ -62,14 +62,14 @@ func main() {
 	//		Name:      "test_cmp",
 	//		Filename:  "test_cmp",
 	//		CreatedAt: time.Time{},
-	//		UpdatedAt: time.Time{},
+	//		UpdatedAt: time.Now(),
 	//	},
 	//	TimeUsed:           0,
 	//	MemoryUsed:         0,
 	//	OutputStrippedHash: "",
 	//	CompareOutputPath:  "compare_output.txt",
 	//}
-	////log.Error(judge.Build(&task))
+	//log.Error(judge.Judge(&task))
 	////log.Error(judge.Run(&task))
 	//log.Error(judge.Compare(&task))
 	//log.Errorf("%+v",task)

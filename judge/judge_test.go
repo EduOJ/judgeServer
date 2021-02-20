@@ -302,6 +302,14 @@ path:
   scripts: ../test_file/scripts
   test_cases: ../test_file/test_cases
   temp: ../test_file/temp
+judge:
+  build:
+    max_time: 1s
+    max_memory: 104857600
+    max_stack: 104857600
+    max_output_size: 104857600
+  run:
+    max_output_size: 104857600
 `
 	viper.SetConfigType("yml")
 	if err := viper.ReadConfig(strings.NewReader(config)); err != nil {
@@ -309,14 +317,19 @@ path:
 	}
 	dir, err := ioutil.TempDir("", "eduoj_judger_test_scripts_*")
 	if err != nil {
-		panic(errors.Wrap(err, "could not create temp dir"))
+		panic(errors.Wrap(err, "could not create temp scripts dir"))
 	}
 	viper.Set("path.scripts", dir)
 	dir, err = ioutil.TempDir("", "eduoj_judger_test_test_cases_*")
 	if err != nil {
-		panic(errors.Wrap(err, "could not create temp dir"))
+		panic(errors.Wrap(err, "could not create temp test cases dir"))
 	}
 	viper.Set("path.test_cases", dir)
+	l, err := ioutil.TempFile("", "eduoj_judger_test_log_*")
+	if err != nil {
+		panic(errors.Wrap(err, "could not create temp log file"))
+	}
+	viper.Set("log.sandbox_log_path", l.Name())
 	ts := httptest.NewServer(http.HandlerFunc(testServerRoute))
 	base.HttpClient = resty.New().SetHostURL(ts.URL)
 	ret := m.Run()

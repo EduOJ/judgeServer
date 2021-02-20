@@ -46,7 +46,7 @@ var ErrRTE = errors.New("runtime error")
 var ErrDSC = errors.New("dangerous system call")
 var ErrWA = errors.New("wrong answer")
 
-func Work(threadCount int) {
+func Start(threadCount int) {
 	base.QuitWG.Add(threadCount)
 	for i := 0; i < threadCount; i++ {
 		go work()
@@ -85,7 +85,7 @@ func work() {
 		if err != nil {
 			log.WithField("error", err).Error("Error occurred when getting task.")
 		}
-		err = api.UpdateRun(task.RunID, generateRequest(task, judge(task)))
+		err = api.UpdateRun(task.RunID, generateRequest(task, Judge(task)))
 		if err != nil {
 			log.WithField("error", err).Error("Error occurred when sending update request.")
 		}
@@ -101,74 +101,43 @@ func generateRequest(task *api.Task, judgementError error) *request.UpdateRunReq
 		OutputStrippedHash: task.OutputStrippedHash,
 		Message:            "",
 	}
-	//switch task.JudgeResult {
-	//case judger.SUCCESS:
-	//	if task.CompareResult {
-	//		req.Status = "ACCEPTED"
-	//	} else {
-	//		req.Status = "WRONG_ANSWER"
-	//	}
-	//case judger.CPU_TIME_LIMIT_EXCEEDED:
-	//	req.Status = "TIME_LIMIT_EXCEEDED"
-	//case judger.REAL_TIME_LIMIT_EXCEEDED:
-	//	req.Status = "TIME_LIMIT_EXCEEDED"
-	//case judger.MEMORY_LIMIT_EXCEEDED:
-	//	req.Status = "MEMORY_LIMIT_EXCEEDED"
-	//case judger.RUNTIME_ERROR:
-	//	req.Status = "RUNTIME_ERROR"
-	//default:
-	//	if judgementError != nil {
-	//		judgementError = errors.New(fmt.Sprintf("unexpected running result: %d", task.JudgeResult))
-	//	}
-	//}
-	if errors.Is(judgementError, ErrBuildError) {
+	if judgementError == nil {
+		req.Status = "ACCEPTED"
+	} else if errors.Is(judgementError, ErrWA) {
+		req.Status = "WRONG_ANSWER"
+	} else if errors.Is(judgementError, ErrTLE) {
+		req.Status = "TIME_LIMIT_EXCEEDED"
+	} else if errors.Is(judgementError, ErrMLE) {
+		req.Status = "MEMORY_LIMIT_EXCEEDED"
+	} else if errors.Is(judgementError, ErrRTE) {
+		req.Status = "RUNTIME_ERROR"
+	} else if errors.Is(judgementError, ErrDSC) {
+		req.Status = "DANGEROUS_SYSTEM_CALL"
+	} else if errors.Is(judgementError, ErrBuildError) {
 		req.Status = "COMPILE_ERROR"
-	} else if judgementError != nil {
+	} else {
 		req.Status = "JUDGEMENT_FAILED"
 		req.Message = judgementError.Error()
 	}
 	return &req
 }
 
-func judge(task *api.Task) error {
+func Judge(task *api.Task) error {
 	var err error
 	if err = getTestCase(task); err != nil {
 		return errors.Wrap(err, "could not get test case")
+	}
+
+	if err = createTempFiles(task); err != nil {
+		return errors.Wrap(err, "could not create temp files")
 	}
 
 	if task.JudgeDir, err = ioutil.TempDir("", "eduoj_judger_run_*"); err != nil {
 		return errors.Wrap(err, "could not create temp directory")
 	}
 
-	buildOutput, err := ioutil.TempFile("", "eduoj_judger_build_output_*")
-	if err != nil {
-		return errors.Wrap(err, "could not create temp file for build output")
-	}
-	task.BuildOutputPath = buildOutput.Name()
-	if err := buildOutput.Close(); err != nil {
-		return errors.Wrap(err, "could not close build output")
-	}
-
-	runFile, err := ioutil.TempFile("", "eduoj_judger_run_file_*")
-	if err != nil {
-		return errors.Wrap(err, "could not create temp file")
-	}
-	task.RunFilePath = runFile.Name()
-	if err := runFile.Close(); err != nil {
-		return errors.Wrap(err, "could not close run file")
-	}
-
-	compareOutput, err := ioutil.TempFile("", "eduoj_judger_compare_output_*")
-	if err != nil {
-		return errors.Wrap(err, "could not create temp file for compare output")
-	}
-	task.CompareOutputPath = compareOutput.Name()
-	if err := buildOutput.Close(); err != nil {
-		return errors.Wrap(err, "could not close compare output")
-	}
-
 	if err = api.GetFile(task.CodeFile, path.Join(task.JudgeDir, "code")); err != nil {
-		return errors.Wrap(err, "could not get input file")
+		return errors.Wrap(err, "could not get code")
 	}
 
 	if err = Build(task); err != nil {
@@ -183,9 +152,40 @@ func judge(task *api.Task) error {
 		return errors.Wrap(err, "could not hash output")
 	}
 
-	//if task.CompareResult, err = compare(task); err != nil {
-	//	return errors.Wrap(err, "could not compare output")
-	//}
+	if err = Compare(task); err != nil {
+		return errors.Wrap(err, "could not compare output")
+	}
+
+	return nil
+}
+
+func createTempFiles(task *api.Task) error {
+	buildOutput, err := ioutil.TempFile("", "eduoj_judger_build_output_*")
+	if err != nil {
+		return errors.Wrap(err, "could not create temp file for build output")
+	}
+	task.BuildOutputPath = buildOutput.Name()
+	if err := buildOutput.Close(); err != nil {
+		return errors.Wrap(err, "could not close run file")
+	}
+
+	runFile, err := ioutil.TempFile("", "eduoj_judger_run_file_*")
+	if err != nil {
+		return errors.Wrap(err, "could not create temp file for run file")
+	}
+	task.RunFilePath = runFile.Name()
+	if err := runFile.Close(); err != nil {
+		return errors.Wrap(err, "could not close run file")
+	}
+
+	compareOutput, err := ioutil.TempFile("", "eduoj_judger_compare_output_*")
+	if err != nil {
+		return errors.Wrap(err, "could not create temp file for compare output")
+	}
+	task.CompareOutputPath = compareOutput.Name()
+	if err := compareOutput.Close(); err != nil {
+		return errors.Wrap(err, "could not close compare output")
+	}
 
 	return nil
 }
@@ -214,7 +214,7 @@ func getTestCase(task *api.Task) error {
 	}
 	updatedAt, err := os.Create(updatedAtPath)
 	if err != nil {
-		return errors.Wrap(err, "could not get updated_at file")
+		return errors.Wrap(err, "could not create updated_at file")
 	}
 	if err = updatedAt.Close(); err != nil {
 		return errors.Wrap(err, "could not close updated_at file")
@@ -264,7 +264,7 @@ func Run(task *api.Task) error {
 	}
 	RunCommand := strings.Split(runScriptOutput, " ")
 
-	result, err := judger.Run(judger.Config{
+	config := judger.Config{
 		MaxCPUTime:           int(task.TimeLimit),
 		MaxRealTime:          int(task.TimeLimit),
 		MaxMemory:            int32(task.MemoryLimit),
@@ -282,11 +282,12 @@ func Run(task *api.Task) error {
 		SeccompRuleName:      getSeccompRuleName(task.Language.Name),
 		Uid:                  base.RunUser.Uid,
 		Gid:                  base.RunUser.Gid,
-	})
-
+	}
+	result, err := judger.Run(config)
 	if err != nil {
 		return errors.Wrap(err, "fail to run user program")
 	}
+	//fmt.Printf("\n\ntask:%+v\n\nconfig:%+v\n\nresult:%+v\n\n",task, config,result)
 
 	task.TimeUsed = uint(result.CPUTime)
 	task.MemoryUsed = uint(result.Memory)
@@ -312,13 +313,13 @@ func Run(task *api.Task) error {
 func hashOutput(task *api.Task) error {
 	f, err := os.Open(task.RunFilePath)
 	if err != nil {
-		return errors.Wrap(err, "could not open run file")
+		return errors.Wrap(err, "could not open run while hashing output")
 	}
 	defer f.Close()
 	hh := sha256.New()
 	_, err = io.Copy(hh, &base.StrippedReader{Inner: bufio.NewReader(f)})
 	if err != nil {
-		return errors.Wrap(err, "could not open run file")
+		return errors.Wrap(err, "could not read run file content when hashing output")
 	}
 	task.OutputStrippedHash = hex.EncodeToString(hh.Sum(nil))
 	return nil
