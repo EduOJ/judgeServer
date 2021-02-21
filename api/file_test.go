@@ -5,7 +5,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
-	"path"
 	"strings"
 	"testing"
 )
@@ -39,7 +38,7 @@ func TestGetFile(t *testing.T) {
 		t.Parallel()
 		file, err := ioutil.TempFile("", "eduoj_judger_test_get_file_*")
 		assert.NoError(t, err)
-		err = GetFile(path.Join("/fileURI", "test_get_file_success", "test_get_file_success_content"), file.Name())
+		err = GetFile("/fileURI/test_get_file_success/test_get_file_success_content", file.Name())
 		assert.NoError(t, err)
 		b, err := ioutil.ReadAll(file)
 		assert.NoError(t, err)
@@ -50,7 +49,7 @@ func TestGetFile(t *testing.T) {
 		t.Parallel()
 		file, err := ioutil.TempFile("", "eduoj_judger_test_get_file_*")
 		assert.NoError(t, err)
-		err = GetFile(path.Join("/fileURI", "test_get_file_NON_EXISTING", "non_existing_content"), file.Name())
+		err = GetFile("/fileURI/test_get_file_NON_EXISTING/non_existing_content", file.Name())
 		assert.NotNil(t, err)
 		assert.Equal(t, `unexpected response: <?xml version="1.0" encoding="UTF-8"?>`+
 			"<Error><Code>NoSuchKey</Code>"+

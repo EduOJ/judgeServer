@@ -4,12 +4,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
-	"path"
 	"testing"
 )
 
 func script(wr http.ResponseWriter, r *http.Request, uri string) {
-	http.Redirect(wr, r, path.Join("/fileURI", uri+".zip", uri+"_content"), http.StatusFound)
+	http.Redirect(wr, r, "/fileURI/"+uri+".zip/"+uri+"_content", http.StatusFound)
 }
 
 func TestGetScript(t *testing.T) {

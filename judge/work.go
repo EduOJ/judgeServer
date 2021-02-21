@@ -43,7 +43,7 @@ var ErrBuildError = errors.New("build error")
 var ErrTLE = errors.New("time limit exceeded")
 var ErrMLE = errors.New("memory limit exceeded")
 var ErrRTE = errors.New("runtime error")
-var ErrDSC = errors.New("dangerous system call")
+var ErrDSC = errors.New("dangerous system calls")
 var ErrWA = errors.New("wrong answer")
 var ErrPE = errors.New("presentation error")
 
@@ -86,12 +86,40 @@ func work() {
 		if err != nil {
 			log.WithField("error", err).Error("Error occurred when getting task.")
 		}
-		err = api.UpdateRun(task.RunID, generateRequest(task, Judge(task)))
-		if err != nil {
+		if err = UpdateRun(task, generateRequest(task, Judge(task))); err != nil {
 			log.WithField("error", err).Error("Error occurred when sending update request.")
 		}
 	}
 	base.QuitWG.Done()
+}
+
+func UpdateRun(task *api.Task, req *request.UpdateRunRequest) error {
+	runFile, err := os.Open(task.RunFilePath)
+	if err != nil {
+		return errors.Wrap(err, "could not open run file for updating run")
+	}
+	buildOutput, err := os.Open(task.BuildOutputPath)
+	if err != nil {
+		return errors.Wrap(err, "could not open build output file for updating run")
+	}
+	compareOutput, err := os.Open(task.CompareOutputPath)
+	if err != nil {
+		return errors.Wrap(err, "could not open compare output file for updating run")
+	}
+	err = api.UpdateRun(task.RunID, req, runFile, buildOutput, compareOutput)
+	if err != nil {
+		return errors.Wrap(err, "could not send update request")
+	}
+	if err := runFile.Close(); err != nil {
+		return errors.Wrap(err, "could not close run file for updating run")
+	}
+	if err := buildOutput.Close(); err != nil {
+		return errors.Wrap(err, "could not close build output file for updating run")
+	}
+	if err := compareOutput.Close(); err != nil {
+		return errors.Wrap(err, "could not close compare output file for updating run")
+	}
+	return nil
 }
 
 func generateRequest(task *api.Task, judgementError error) *request.UpdateRunRequest {
@@ -115,7 +143,7 @@ func generateRequest(task *api.Task, judgementError error) *request.UpdateRunReq
 	} else if errors.Is(judgementError, ErrRTE) {
 		req.Status = "RUNTIME_ERROR"
 	} else if errors.Is(judgementError, ErrDSC) {
-		req.Status = "DANGEROUS_SYSTEM_CALL"
+		req.Status = "DANGEROUS_SYSTEM_CALLS"
 	} else if errors.Is(judgementError, ErrBuildError) {
 		req.Status = "COMPILE_ERROR"
 	} else {

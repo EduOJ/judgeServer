@@ -109,10 +109,10 @@ func TestGenerateRequest(t *testing.T) {
 		actualReq := generateRequest(&task, errors.Wrap(ErrRTE, "wrap message"))
 		assert.Equal(t, &expectedReq, actualReq)
 	})
-	t.Run("DangerousSystemCall", func(t *testing.T) {
+	t.Run("DangerousSystemCalls", func(t *testing.T) {
 		t.Parallel()
 		expectedReq := request.UpdateRunRequest{
-			Status:             "DANGEROUS_SYSTEM_CALL",
+			Status:             "DANGEROUS_SYSTEM_CALLS",
 			MemoryUsed:         5120,
 			TimeUsed:           3000,
 			OutputStrippedHash: "test_generate_request_output_stripped_hash",
@@ -615,16 +615,16 @@ echo -n $1/a.out
 		assert.ErrorIs(t, err, ErrRTE)
 		checkFile(t, viper.GetString("log.sandbox_log_path"), "")
 	})
-	t.Run("DangerousSystemCall", func(t *testing.T) {
+	t.Run("DangerousSystemCalls", func(t *testing.T) {
 		t.Parallel()
 		task := api.Task{
-			RunID:       hashStringToId("[Run] TestRun/DangerousSystemCall"),
+			RunID:       hashStringToId("[Run] TestRun/DangerousSystemCalls"),
 			TimeLimit:   1000,
 			MemoryLimit: 10240000,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
-					Name:      "test_run_dangerous_system_call",
+					Name:      "test_run_dangerous_system_calls",
 					UpdatedAt: time.Time{},
 				},
 			},
@@ -648,11 +648,11 @@ int main(){
 		assert.NoError(t, err)
 		err = exec.Command("g++", path.Join(task.JudgeDir, "code.cpp"), "-o", path.Join(task.JudgeDir, "a.out")).Run()
 		assert.NoError(t, err)
-		err = createAndWrite(path.Join(viper.GetString("path.scripts"), "test_run_dangerous_system_call", "run"), `#!/bin/bash
+		err = createAndWrite(path.Join(viper.GetString("path.scripts"), "test_run_dangerous_system_calls", "run"), `#!/bin/bash
 echo -n $1/a.out
 `)
 		assert.NoError(t, err)
-		err = os.Chmod(path.Join(viper.GetString("path.scripts"), "test_run_dangerous_system_call", "run"), 0777)
+		err = os.Chmod(path.Join(viper.GetString("path.scripts"), "test_run_dangerous_system_calls", "run"), 0777)
 		assert.NoError(t, err)
 		runFile, err := ioutil.TempFile("", "eduoj_judger_test_run_*")
 		assert.NoError(t, err)
@@ -662,7 +662,7 @@ echo -n $1/a.out
 		assert.NoError(t, err)
 		inputFile, err := ioutil.TempFile("", "eduoj_judger_test_run_*")
 		assert.NoError(t, err)
-		_, err = inputFile.WriteString("test_run_dangerous_system_call_input")
+		_, err = inputFile.WriteString("test_run_dangerous_system_calls_input")
 		assert.NoError(t, err)
 		task.InputFilePath = inputFile.Name()
 		assert.NoError(t, err)
