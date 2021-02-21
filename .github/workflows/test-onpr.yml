@@ -4,7 +4,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.14.x]
+        go-version: [ 1.14.x, 1.15.x, 1.16.x ]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -16,7 +16,7 @@ jobs:
         run: |
           sudo useradd build_user
           sudo useradd run_user
-      - name: Install Lib Seccomp
+      - name: Install libseccomp
         run: sudo apt-get install libseccomp-dev
       - name: Checkout code
         uses: actions/checkout@v2
@@ -27,7 +27,7 @@ jobs:
   test-race:
     strategy:
       matrix:
-        go-version: [1.14.x]
+        go-version: [ 1.14.x, 1.15.x, 1.16.x ]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
