@@ -21,9 +21,9 @@ func TestRemoveCache(t *testing.T) {
 	assert.NoError(t, os.MkdirAll(viper.GetString("path.test_cases"), 0777))
 	assert.NoError(t, RemoveCache())
 	_, err := os.Stat(viper.GetString("path.scripts"))
-	assert.True(t, os.IsNotExist(err))
+	assert.ErrorIs(t, err, os.ErrNotExist)
 	_, err = os.Stat(viper.GetString("path.test_cases"))
-	assert.True(t, os.IsNotExist(err))
+	assert.ErrorIs(t, err, os.ErrNotExist)
 }
 
 func TestIsFileLatest(t *testing.T) {

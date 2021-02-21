@@ -291,7 +291,7 @@ func checkFile(t *testing.T, path, content string) {
 
 func checkFileNonExist(t *testing.T, path string) {
 	_, err := os.OpenFile(path, os.O_RDONLY, 0666)
-	assert.True(t, os.IsNotExist(err))
+	assert.ErrorIs(t, err, os.ErrNotExist)
 }
 
 func TestMain(m *testing.M) {

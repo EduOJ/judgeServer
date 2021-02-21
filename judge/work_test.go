@@ -307,7 +307,7 @@ exit 0
 		err = buildOutput.Close()
 		assert.NoError(t, err)
 		err = Build(&task)
-		assert.True(t, errors.Is(err, ErrBuildError))
+		assert.ErrorIs(t, err, ErrBuildError)
 		checkFile(t, path.Join(task.JudgeDir, "build_result"), "code=test_build_timeout_code\n")
 		checkFile(t, buildOutput.Name(), "[debug]test_build_timeout_output\n")
 	})
@@ -342,7 +342,7 @@ exit 1
 		err = buildOutput.Close()
 		assert.NoError(t, err)
 		err = Build(&task)
-		assert.True(t, errors.Is(err, ErrBuildError))
+		assert.ErrorIs(t, err, ErrBuildError)
 		checkFile(t, path.Join(task.JudgeDir, "build_result"), "code=test_build_non_zero_exit_code_code\n")
 		checkFile(t, buildOutput.Name(), "[debug]test_build_non_zero_exit_code_output\n")
 	})
@@ -490,7 +490,7 @@ echo -n $1/a.out
 		assert.NoError(t, err)
 
 		err = Run(&task)
-		assert.True(t, errors.Is(err, ErrTLE))
+		assert.ErrorIs(t, err, ErrTLE)
 		checkFile(t, viper.GetString("log.sandbox_log_path"), "")
 	})
 	t.Run("MemoryLimitExceeded", func(t *testing.T) {
@@ -546,7 +546,7 @@ echo -n $1/a.out
 		assert.NoError(t, err)
 
 		err = Run(&task)
-		assert.True(t, errors.Is(err, ErrMLE))
+		assert.ErrorIs(t, err, ErrMLE)
 		checkFile(t, viper.GetString("log.sandbox_log_path"), "")
 	})
 	t.Run("RuntimeError", func(t *testing.T) {
@@ -604,7 +604,7 @@ echo -n $1/a.out
 		assert.NoError(t, err)
 
 		err = Run(&task)
-		assert.True(t, errors.Is(err, ErrRTE))
+		assert.ErrorIs(t, err, ErrRTE)
 		checkFile(t, viper.GetString("log.sandbox_log_path"), "")
 	})
 	t.Run("DangerousSystemCall", func(t *testing.T) {
@@ -662,7 +662,7 @@ echo -n $1/a.out
 		assert.NoError(t, err)
 
 		err = Run(&task)
-		assert.True(t, errors.Is(err, ErrDSC))
+		assert.ErrorIs(t, err, ErrDSC)
 		checkFile(t, viper.GetString("log.sandbox_log_path"), "")
 	})
 	t.Run("SystemError", func(t *testing.T) {
