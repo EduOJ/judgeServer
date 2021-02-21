@@ -91,9 +91,9 @@ func initHttpClient() {
 
 func initUsers() {
 	var err error
-	err = base.BuildUser.Init(viper.GetString("user.compile"))
+	err = base.BuildUser.Init(viper.GetString("user.build"))
 	if err != nil {
-		log.Fatal("Could not find compile user named " + viper.GetString("user.compile"))
+		log.Fatal("Could not find compile user named " + viper.GetString("user.build"))
 	}
 	err = base.RunUser.Init(viper.GetString("user.run"))
 	if err != nil {

@@ -261,7 +261,7 @@ echo code=$(cat $1/code) > $1/build_result
 exit 0
 `)
 		assert.NoError(t, err)
-		err = os.Chmod(path.Join(viper.GetString("path.scripts"), "test_build_success", "run"), 0777)
+		err = os.Chmod(path.Join(viper.GetString("path.scripts"), "test_build_success", "run"), 0755)
 		assert.NoError(t, err)
 		buildOutput, err := ioutil.TempFile("", "eduoj_judger_test_build_*")
 		assert.NoError(t, err)
@@ -298,7 +298,7 @@ sleep 10m
 exit 0
 `)
 		assert.NoError(t, err)
-		err = os.Chmod(path.Join(viper.GetString("path.scripts"), "test_build_timeout", "run"), 0777)
+		err = os.Chmod(path.Join(viper.GetString("path.scripts"), "test_build_timeout", "run"), 0755)
 		assert.NoError(t, err)
 		buildOutput, err := ioutil.TempFile("", "eduoj_judger_test_build_*")
 		assert.NoError(t, err)
@@ -333,7 +333,7 @@ echo code=$(cat $1/code) > $1/build_result
 exit 1
 `)
 		assert.NoError(t, err)
-		err = os.Chmod(path.Join(viper.GetString("path.scripts"), "test_build_non_zero_exit_code", "run"), 0777)
+		err = os.Chmod(path.Join(viper.GetString("path.scripts"), "test_build_non_zero_exit_code", "run"), 0755)
 		assert.NoError(t, err)
 		buildOutput, err := ioutil.TempFile("", "eduoj_judger_test_build_*")
 		assert.NoError(t, err)
@@ -398,6 +398,8 @@ func TestRun(t *testing.T) { // TODO: fix race bug
 		var err error
 		task.JudgeDir, err = ioutil.TempDir("", "eduoj_judger_test_run_*")
 		assert.NoError(t, err)
+		err = os.Chmod(path.Join(task.JudgeDir), 0777)
+		assert.NoError(t, err)
 		err = createAndWrite(path.Join(task.JudgeDir, "code.cpp"), `#include <iostream>
 using namespace std;
 int main(){
@@ -453,6 +455,8 @@ echo -n $1/a.out
 		}
 		var err error
 		task.JudgeDir, err = ioutil.TempDir("", "eduoj_judger_test_run_*")
+		assert.NoError(t, err)
+		err = os.Chmod(path.Join(task.JudgeDir), 0777)
 		assert.NoError(t, err)
 		err = createAndWrite(path.Join(task.JudgeDir, "code.cpp"), `#include <iostream>
 using namespace std;
@@ -510,6 +514,8 @@ echo -n $1/a.out
 		var err error
 		task.JudgeDir, err = ioutil.TempDir("", "eduoj_judger_test_run_*")
 		assert.NoError(t, err)
+		err = os.Chmod(path.Join(task.JudgeDir), 0777)
+		assert.NoError(t, err)
 		err = createAndWrite(path.Join(task.JudgeDir, "code.cpp"), `#include <iostream>
 using namespace std;
 
@@ -565,6 +571,8 @@ echo -n $1/a.out
 		}
 		var err error
 		task.JudgeDir, err = ioutil.TempDir("", "eduoj_judger_test_run_*")
+		assert.NoError(t, err)
+		err = os.Chmod(path.Join(task.JudgeDir), 0777)
 		assert.NoError(t, err)
 		err = createAndWrite(path.Join(task.JudgeDir, "code.cpp"), `#include <iostream>
 using namespace std;
@@ -660,6 +668,8 @@ echo -n $1/a.out
 		assert.NoError(t, err)
 		err = inputFile.Close()
 		assert.NoError(t, err)
+		err = os.Chmod(path.Join(task.JudgeDir), 0777)
+		assert.NoError(t, err)
 
 		err = Run(&task)
 		assert.ErrorIs(t, err, ErrDSC)
@@ -690,6 +700,8 @@ echo -n $1/a.out
 			},
 		}
 		task.JudgeDir, err = ioutil.TempDir("", "eduoj_judger_test_run_*")
+		assert.NoError(t, err)
+		err = os.Chmod(path.Join(task.JudgeDir), 0777)
 		assert.NoError(t, err)
 		err = createAndWrite(path.Join(task.JudgeDir, "code.cpp"), `#include <iostream>
 #include <cstdlib>
@@ -752,11 +764,11 @@ func TestHashOutput(t *testing.T) {
 }
 
 func TestCompare(t *testing.T) {
-	err := os.MkdirAll(path.Join(viper.GetString("path.scripts"), "test_compare_script"), 0777)
+	err := os.MkdirAll(path.Join(viper.GetString("path.scripts"), "test_compare_script"), 0700)
 	assert.NoError(t, err)
 	r, err := os.Create(path.Join(viper.GetString("path.scripts"), "test_compare_script", "run"))
 	assert.NoError(t, err)
-	err = os.Chmod(r.Name(), 0777)
+	err = os.Chmod(r.Name(), 0700)
 	assert.NoError(t, err)
 	_, err = r.WriteString(`#!/bin/bash
 #echo 1

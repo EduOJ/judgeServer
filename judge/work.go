@@ -290,7 +290,7 @@ func Run(task *api.Task) error {
 	if err != nil {
 		return errors.Wrap(err, "fail to run user program")
 	}
-	//fmt.Printf("\n\ntask:%+v\n\nconfig:%+v\n\nresult:%+v\n\n",task, config,result)
+	//fmt.Printf("\n\ntask:%+v\n\nconfig:%+v\n\nrun command:%+v\n\nresult:%+v\n\n",task, config,RunCommand,result)
 
 	task.TimeUsed = uint(result.CPUTime)
 	task.MemoryUsed = uint(result.Memory)

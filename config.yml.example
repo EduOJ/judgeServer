@@ -1,7 +1,7 @@
 backend:
   endpoint: http://127.0.0.1:8080/judger
 user:
-  compile: build_user
+  build: build_user
   run: run_user
 log:
   log_path: ./test.log

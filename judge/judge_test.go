@@ -296,7 +296,7 @@ func checkFileNonExist(t *testing.T, path string) {
 
 func TestMain(m *testing.M) {
 	config := `user:
-  compile: build_user
+  build: build_user
   run: run_user
 path:
   scripts: ../test_file/scripts
@@ -320,6 +320,10 @@ judge:
 		panic(errors.Wrap(err, "could not create temp scripts dir"))
 	}
 	viper.Set("path.scripts", dir)
+	err = os.Chmod(viper.GetString("path.scripts"), 0755)
+	if err != nil {
+		panic(errors.Wrap(err, "could not set permission for scripts directory"))
+	}
 	dir, err = ioutil.TempDir("", "eduoj_judger_test_test_cases_*")
 	if err != nil {
 		panic(errors.Wrap(err, "could not create temp test cases dir"))
@@ -330,6 +334,14 @@ judge:
 		panic(errors.Wrap(err, "could not create temp log file"))
 	}
 	viper.Set("log.sandbox_log_path", l.Name())
+	err = base.BuildUser.Init(viper.GetString("user.build"))
+	if err != nil {
+		panic(errors.Wrap(err, "could not init build user"))
+	}
+	err = base.RunUser.Init(viper.GetString("user.run"))
+	if err != nil {
+		panic(errors.Wrap(err, "could not init run user"))
+	}
 	ts := httptest.NewServer(http.HandlerFunc(testServerRoute))
 	base.HttpClient = resty.New().SetHostURL(ts.URL)
 	ret := m.Run()
