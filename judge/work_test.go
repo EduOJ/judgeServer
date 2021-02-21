@@ -61,6 +61,18 @@ func TestGenerateRequest(t *testing.T) {
 		actualReq := generateRequest(&task, errors.Wrap(ErrWA, "wrap message"))
 		assert.Equal(t, &expectedReq, actualReq)
 	})
+	t.Run("PresentationError", func(t *testing.T) {
+		t.Parallel()
+		expectedReq := request.UpdateRunRequest{
+			Status:             "PRESENTATION_ERROR",
+			MemoryUsed:         5120,
+			TimeUsed:           3000,
+			OutputStrippedHash: "test_generate_request_output_stripped_hash",
+			Message:            "",
+		}
+		actualReq := generateRequest(&task, errors.Wrap(ErrPE, "wrap message"))
+		assert.Equal(t, &expectedReq, actualReq)
+	})
 	t.Run("TimeLimitExceeded", func(t *testing.T) {
 		t.Parallel()
 		expectedReq := request.UpdateRunRequest{
@@ -376,6 +388,7 @@ func TestRun(t *testing.T) { // TODO: fix race bug
 			TimeLimit:   1000,
 			MemoryLimit: 500000000,
 			Language: models.Language{
+				Name: "cpp",
 				RunScript: &models.Script{
 					Name:      "test_run_success",
 					UpdatedAt: time.Time{},
@@ -431,6 +444,7 @@ echo -n $1/a.out
 			TimeLimit:   1000,
 			MemoryLimit: 10240000,
 			Language: models.Language{
+				Name: "cpp",
 				RunScript: &models.Script{
 					Name:      "test_run_time_limit_exceeded",
 					UpdatedAt: time.Time{},
@@ -486,6 +500,7 @@ echo -n $1/a.out
 			TimeLimit:   1000,
 			MemoryLimit: 102400,
 			Language: models.Language{
+				Name: "cpp",
 				RunScript: &models.Script{
 					Name:      "test_run_memory_limit_exceeded",
 					UpdatedAt: time.Time{},
@@ -541,6 +556,7 @@ echo -n $1/a.out
 			TimeLimit:   1000,
 			MemoryLimit: 500000000,
 			Language: models.Language{
+				Name: "cpp",
 				RunScript: &models.Script{
 					Name:      "test_run_runtime_error",
 					UpdatedAt: time.Time{},
@@ -598,6 +614,7 @@ echo -n $1/a.out
 			TimeLimit:   1000,
 			MemoryLimit: 10240000,
 			Language: models.Language{
+				Name: "cpp",
 				RunScript: &models.Script{
 					Name:      "test_run_dangerous_system_call",
 					UpdatedAt: time.Time{},
@@ -665,6 +682,7 @@ echo -n $1/a.out
 			TimeLimit:   1000,
 			MemoryLimit: 500000000,
 			Language: models.Language{
+				Name: "cpp",
 				RunScript: &models.Script{
 					Name:      "test_run_system_error",
 					UpdatedAt: time.Time{},
@@ -747,17 +765,23 @@ func TestCompare(t *testing.T) {
 #echo $(cat $1)
 #echo $(cat $2)
 
-ret=$(diff $1 $2)
+ret=$(diff -w $1 $2)
 # echo ==[$ret]==
 content1=$(cat $1)
 if [ "$content1" == "OTHER_OUTPUT" ]
 then
-  exit 2
-elif [ "$ret" == "" ]
+  exit 3
+elif [ "$ret" != "" ]
+then
+  exit 1
+fi
+critical=$(diff $1 $2)
+# echo ==[$critical]==
+if  [ "$critical" == "" ]
 then
   exit 0
 else
-  exit 1
+  exit 2
 fi
 `)
 	assert.NoError(t, err)
@@ -793,7 +817,6 @@ fi
 		err = Compare(&task)
 		assert.NoError(t, err)
 	})
-
 	t.Run("Different", func(t *testing.T) {
 		t.Parallel()
 		runFile, err := ioutil.TempFile("", "eduoj_judger_test_compare_*")
@@ -823,7 +846,6 @@ fi
 		err = Compare(&task)
 		assert.Equal(t, ErrWA, err)
 	})
-
 	t.Run("OtherOutput", func(t *testing.T) {
 		t.Parallel()
 		runFile, err := ioutil.TempFile("", "eduoj_judger_test_compare_*")
@@ -852,6 +874,35 @@ fi
 		}
 		err = Compare(&task)
 		assert.NotNil(t, err)
-		assert.Equal(t, "unexpected compare script output: 2", err.Error())
+		assert.Equal(t, "unexpected compare script output: 3", err.Error())
+	})
+	t.Run("PresentationError", func(t *testing.T) {
+		t.Parallel()
+		runFile, err := ioutil.TempFile("", "eduoj_judger_test_compare_*")
+		assert.NoError(t, err)
+		_, err = runFile.WriteString("test_  compare_  run")
+		assert.NoError(t, err)
+		err = runFile.Close()
+		assert.NoError(t, err)
+
+		err = createAndWrite(path.Join(viper.GetString("path.test_cases"), "test_compare_script_presentation_error", "out"), "t e     st  _co       mp a r e_r un   ")
+		assert.NoError(t, err)
+
+		compareOutputFile, err := ioutil.TempFile("", "eduoj_judger_test_compare_*")
+		assert.NoError(t, err)
+		err = compareOutputFile.Close()
+		assert.NoError(t, err)
+
+		task := api.Task{
+			OutputFilePath: path.Join(viper.GetString("path.test_cases"), "test_compare_script_presentation_error", "out"),
+			RunFilePath:    runFile.Name(),
+			CompareScript: models.Script{
+				Name:      "test_compare_script",
+				UpdatedAt: time.Now().Add(-1 * time.Hour),
+			},
+			CompareOutputPath: compareOutputFile.Name(),
+		}
+		err = Compare(&task)
+		assert.Equal(t, ErrPE, err)
 	})
 }

@@ -45,6 +45,7 @@ var ErrMLE = errors.New("memory limit exceeded")
 var ErrRTE = errors.New("runtime error")
 var ErrDSC = errors.New("dangerous system call")
 var ErrWA = errors.New("wrong answer")
+var ErrPE = errors.New("presentation error")
 
 func Start(threadCount int) {
 	base.QuitWG.Add(threadCount)
@@ -105,6 +106,8 @@ func generateRequest(task *api.Task, judgementError error) *request.UpdateRunReq
 		req.Status = "ACCEPTED"
 	} else if errors.Is(judgementError, ErrWA) {
 		req.Status = "WRONG_ANSWER"
+	} else if errors.Is(judgementError, ErrPE) {
+		req.Status = "PRESENTATION_ERROR"
 	} else if errors.Is(judgementError, ErrTLE) {
 		req.Status = "TIME_LIMIT_EXCEEDED"
 	} else if errors.Is(judgementError, ErrMLE) {
@@ -331,8 +334,8 @@ func Compare(task *api.Task) error {
 		return errors.Wrap(err, "could not ensure compare script latest")
 	}
 
-	cmd := exec.Command("./run", task.RunFilePath, task.OutputFilePath, task.JudgeDir, task.InputFilePath)
-	cmd.Dir = path.Join(viper.GetString("path.scripts"), task.CompareScript.Name)
+	cmd := exec.Command(path.Join(viper.GetString("path.scripts"), task.CompareScript.Name, "run"),
+		task.RunFilePath, task.OutputFilePath, task.JudgeDir, task.InputFilePath)
 	compareOutput, err := os.OpenFile(task.CompareOutputPath, os.O_WRONLY, 0)
 	if err != nil {
 		return errors.Wrap(err, "could not open compare output file")
@@ -344,9 +347,13 @@ func Compare(task *api.Task) error {
 	if err := cmd.Run(); err != nil {
 		var exitError *exec.ExitError
 		if errors.As(err, &exitError) {
-			if c := err.(*exec.ExitError).ExitCode(); c == 1 {
+			c := exitError.ExitCode()
+			switch c {
+			case 1:
 				return ErrWA
-			} else {
+			case 2:
+				return ErrPE
+			default:
 				return errors.New(fmt.Sprintf("unexpected compare script output: %d", c))
 			}
 		}
