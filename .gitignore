@@ -27,3 +27,4 @@ go.sum
 /testing_requests
 /test_file/
 /scripts/
+!/example/problem/test_cases/*.out

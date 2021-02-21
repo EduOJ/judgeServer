@@ -1,0 +1,25 @@
+#!/bin/bash
+#echo 1
+#echo $1
+#echo $2
+#echo $(cat "$1")
+#echo $(cat "$2")
+
+ret=$(diff -w "$1" "$2")
+# echo ==[$ret]==
+content1=$(cat "$1")
+if [ "$content1" == "OTHER_OUTPUT" ]
+then
+  exit 3
+elif [ "$ret" != "" ]
+then
+  exit 1
+fi
+critical=$(diff "$1" "$2")
+# echo ==[$critical]==
+if  [ "$critical" == "" ]
+then
+  exit 0
+else
+  exit 2
+fi
