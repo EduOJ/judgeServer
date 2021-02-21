@@ -378,7 +378,7 @@ exit 0
 	})
 }
 
-func TestRun(t *testing.T) { // TODO: fix race bug
+func TestRun(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {
@@ -386,7 +386,7 @@ func TestRun(t *testing.T) { // TODO: fix race bug
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/Success"),
 			TimeLimit:   1000,
-			MemoryLimit: 50 * 1024 * 1024,
+			MemoryLimit: 500 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
@@ -560,7 +560,7 @@ echo -n $1/a.out
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/RuntimeError"),
 			TimeLimit:   1000,
-			MemoryLimit: 50 * 1024 * 1024,
+			MemoryLimit: 500 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
@@ -690,7 +690,7 @@ echo -n $1/a.out
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/SystemError"),
 			TimeLimit:   1000,
-			MemoryLimit: 50 * 1024 * 1024,
+			MemoryLimit: 500 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
