@@ -386,7 +386,7 @@ func TestRun(t *testing.T) { // TODO: fix race bug
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/Success"),
 			TimeLimit:   1000,
-			MemoryLimit: 500000000,
+			MemoryLimit: 50 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
@@ -444,7 +444,7 @@ echo -n $1/a.out
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/TimeLimitExceeded"),
 			TimeLimit:   1000,
-			MemoryLimit: 10240000,
+			MemoryLimit: 5 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
@@ -502,7 +502,7 @@ echo -n $1/a.out
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/MemoryLimitExceeded"),
 			TimeLimit:   1000,
-			MemoryLimit: 102400,
+			MemoryLimit: 1 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
@@ -560,7 +560,7 @@ echo -n $1/a.out
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/RuntimeError"),
 			TimeLimit:   1000,
-			MemoryLimit: 500000000,
+			MemoryLimit: 50 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
@@ -620,7 +620,7 @@ echo -n $1/a.out
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/DangerousSystemCalls"),
 			TimeLimit:   1000,
-			MemoryLimit: 10240000,
+			MemoryLimit: 5 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
@@ -690,7 +690,7 @@ echo -n $1/a.out
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/SystemError"),
 			TimeLimit:   1000,
-			MemoryLimit: 500000000,
+			MemoryLimit: 50 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{

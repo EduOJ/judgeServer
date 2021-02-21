@@ -302,7 +302,7 @@ func Run(task *api.Task) error {
 		MaxStack:             int32(task.MemoryLimit),
 		MaxProcessNumber:     -1,
 		MaxOutputSize:        viper.GetInt32("judge.run.max_output_size"),
-		MemoryLimitCheckOnly: 0,
+		MemoryLimitCheckOnly: 1,
 		ExePath:              RunCommand[0],
 		InputPath:            task.InputFilePath,
 		OutputPath:           task.RunFilePath,
