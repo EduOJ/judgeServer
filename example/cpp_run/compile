@@ -1,5 +1,2 @@
 #!/bin/bash
-echo compiling script cpp_run
-echo "#!/bin/bash
-echo -n \$1/a.out" > run
 chmod 700 run

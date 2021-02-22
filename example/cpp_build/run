@@ -1,3 +1,3 @@
 #!/bin/bash
 mv "$1"/code "$1"/code.cpp
-g++ "$1"/code.cpp -o "$1"/a.out -lm -O2 -DONLINE_JUDGE -std=c++14 -fmax-errors=255
+clang++ "$1"/code.cpp -o "$1"/a.out -lm -O2 -DONLINE_JUDGE -std=c++17 -fmax-errors=255

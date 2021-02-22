@@ -73,8 +73,7 @@ Follow the requirements, and refer to the [example](/example).
         * eg: using `$3/other_file` to indicate a file in the run directory
 * Input & Output:
     * No input for compare scripts
-    * The output will be stored and only displayed for users with permission like administers
-    * Error output will be written to the same file as normal output
+    * Must output a unified diff or a string starts with `"### "`
 * Exit code:
     * Accepted: exit with `0`
     * Wrong answer: exit with `1`

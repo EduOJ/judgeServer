@@ -8,7 +8,7 @@ An example for testing EduOJJudger.
 
 * build script: [cpp_build](/example/cpp_build)
 * run script: [cpp_run](/example/cpp_run)
-* compare script: [cmp](/example/cmp)
+* compare script: [cmp](/example/compare_exact_match)
 
 ### Problem
 * description and example code files: [problem](/example/problem)

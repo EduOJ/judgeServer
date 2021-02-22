@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+import sys,difflib
+output = sys.argv[1]
+answer = sys.argv[2]
+with open(output) as f:
+    output_f = f.readlines()
+
+with open(answer) as f:
+    answer_f = f.readlines()
+
+if len(output_f) != len(answer_f):
+    sys.stdout.writelines(difflib.unified_diff(answer_f, output_f, fromfile='answer', tofile='output'))
+    exit(1)
+
+if output_f == answer_f:
+    exit(0)
+
+pe_lines = -1
+for i in range(len(output_f)):
+    if output_f[i] != answer_f[i]:
+        if output_f[i].replace(" ", "").replace("\n", "") == answer_f[i].replace(" ", "").replace("\n", ""):
+            pe_lines = i
+            break
+        else:
+            sys.stdout.writelines(difflib.unified_diff(answer_f, output_f, fromfile='answer', tofile='output'))
+            exit(1)
+print("### 第{}行格式错误。".format(pe_lines))
+exit(2)
