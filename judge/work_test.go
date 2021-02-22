@@ -269,7 +269,7 @@ exit 0
 		assert.NoError(t, err)
 		err = buildOutput.Close()
 		assert.NoError(t, err)
-		err = Build(&task)
+		err = build(&task)
 		assert.NoError(t, err)
 		checkFile(t, path.Join(task.JudgeDir, "build_result"), "code=test_build_success_code\n")
 		checkFile(t, buildOutput.Name(), "[debug]test_build_success_output\n")
@@ -306,7 +306,7 @@ exit 0
 		assert.NoError(t, err)
 		err = buildOutput.Close()
 		assert.NoError(t, err)
-		err = Build(&task)
+		err = build(&task)
 		assert.ErrorIs(t, err, ErrBuildError)
 		checkFile(t, path.Join(task.JudgeDir, "build_result"), "code=test_build_timeout_code\n")
 		checkFile(t, buildOutput.Name(), "[debug]test_build_timeout_output\n")
@@ -341,7 +341,7 @@ exit 1
 		assert.NoError(t, err)
 		err = buildOutput.Close()
 		assert.NoError(t, err)
-		err = Build(&task)
+		err = build(&task)
 		assert.ErrorIs(t, err, ErrBuildError)
 		checkFile(t, path.Join(task.JudgeDir, "build_result"), "code=test_build_non_zero_exit_code_code\n")
 		checkFile(t, buildOutput.Name(), "[debug]test_build_non_zero_exit_code_output\n")
@@ -372,7 +372,7 @@ exit 0
 		assert.NoError(t, err)
 		err = buildOutput.Close()
 		assert.NoError(t, err)
-		err = Build(&task)
+		err = build(&task)
 		assert.NotNil(t, err)
 		assert.Regexp(t, regexp.MustCompile(`fail to build user program: fork/exec /tmp/eduoj_judger_test_scripts_\d+/test_build_other_error/run: permission denied`), err.Error())
 	})
@@ -434,7 +434,7 @@ echo -n $1/a.out
 		err = inputFile.Close()
 		assert.NoError(t, err)
 
-		err = Run(&task)
+		err = run(&task)
 		assert.NoError(t, err)
 		checkFile(t, runFile.Name(), "test_run, input=test_run_success_input\n")
 		checkFile(t, viper.GetString("log.sandbox_log_path"), "")
@@ -493,7 +493,7 @@ echo -n $1/a.out
 		err = inputFile.Close()
 		assert.NoError(t, err)
 
-		err = Run(&task)
+		err = run(&task)
 		assert.ErrorIs(t, err, ErrTLE)
 		checkFile(t, viper.GetString("log.sandbox_log_path"), "")
 	})
@@ -551,7 +551,7 @@ echo -n $1/a.out
 		err = inputFile.Close()
 		assert.NoError(t, err)
 
-		err = Run(&task)
+		err = run(&task)
 		assert.ErrorIs(t, err, ErrMLE)
 		checkFile(t, viper.GetString("log.sandbox_log_path"), "")
 	})
@@ -611,7 +611,7 @@ echo -n $1/a.out
 		err = inputFile.Close()
 		assert.NoError(t, err)
 
-		err = Run(&task)
+		err = run(&task)
 		assert.ErrorIs(t, err, ErrRTE)
 		checkFile(t, viper.GetString("log.sandbox_log_path"), "")
 	})
@@ -671,7 +671,7 @@ echo -n $1/a.out
 		err = os.Chmod(path.Join(task.JudgeDir), 0777)
 		assert.NoError(t, err)
 
-		err = Run(&task)
+		err = run(&task)
 		assert.ErrorIs(t, err, ErrDSC)
 		checkFile(t, viper.GetString("log.sandbox_log_path"), "")
 	})
@@ -730,7 +730,7 @@ echo -n $1/a.out
 		assert.NoError(t, err)
 		err = runFile.Close()
 		assert.NoError(t, err)
-		err = Run(&task)
+		err = run(&task)
 		assert.NotNil(t, err)
 		assert.Equal(t, "runtime error", err.Error())
 		l, err := os.Open(viper.GetString("log.sandbox_log_path"))
@@ -826,7 +826,7 @@ fi
 			},
 			CompareOutputPath: compareOutputFile.Name(),
 		}
-		err = Compare(&task)
+		err = compare(&task)
 		assert.NoError(t, err)
 	})
 	t.Run("Different", func(t *testing.T) {
@@ -855,7 +855,7 @@ fi
 			},
 			CompareOutputPath: compareOutputFile.Name(),
 		}
-		err = Compare(&task)
+		err = compare(&task)
 		assert.Equal(t, ErrWA, err)
 	})
 	t.Run("OtherOutput", func(t *testing.T) {
@@ -884,7 +884,7 @@ fi
 			},
 			CompareOutputPath: compareOutputFile.Name(),
 		}
-		err = Compare(&task)
+		err = compare(&task)
 		assert.NotNil(t, err)
 		assert.Equal(t, "unexpected compare script output: 3", err.Error())
 	})
@@ -914,7 +914,7 @@ fi
 			},
 			CompareOutputPath: compareOutputFile.Name(),
 		}
-		err = Compare(&task)
+		err = compare(&task)
 		assert.Equal(t, ErrPE, err)
 	})
 }

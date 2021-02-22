@@ -50,7 +50,7 @@ var ErrPE = errors.New("presentation error")
 func Start(threadCount int) {
 	base.QuitWG.Add(threadCount)
 	for i := 0; i < threadCount; i++ {
-		go Work()
+		go work()
 	}
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, syscall.SIGHUP,
@@ -71,7 +71,7 @@ func Start(threadCount int) {
 	base.QuitWG.Wait()
 }
 
-func Work() {
+func work() {
 	stop := false
 	go func() {
 		<-base.BaseContext.Done()
@@ -90,14 +90,14 @@ func Work() {
 		if err != nil {
 			log.WithField("error", err).Error("Error occurred when getting task.")
 		}
-		if err = UpdateRun(task, generateRequest(task, Judge(task))); err != nil {
+		if err = updateRun(task, generateRequest(task, judge(task))); err != nil {
 			log.WithField("error", err).Error("Error occurred when sending update request.")
 		}
 	}
 	base.QuitWG.Done()
 }
 
-func UpdateRun(task *api.Task, req *request.UpdateRunRequest) error {
+func updateRun(task *api.Task, req *request.UpdateRunRequest) error {
 	runFile, err := os.Open(task.RunFilePath)
 	if err != nil {
 		return errors.Wrap(err, "could not open run file for updating run")
@@ -157,14 +157,13 @@ func generateRequest(task *api.Task, judgementError error) *request.UpdateRunReq
 	return &req
 }
 
-func Judge(task *api.Task) error {
+func judge(task *api.Task) error {
 	var err error
-	if err = getTestCase(task); err != nil {
-		return errors.Wrap(err, "could not get test case")
-	}
-
 	if err = createTempFiles(task); err != nil {
 		return errors.Wrap(err, "could not create temp files")
+	}
+	if err = getTestCase(task); err != nil {
+		return errors.Wrap(err, "could not get test case")
 	}
 
 	if task.JudgeDir, err = ioutil.TempDir("", "eduoj_judger_run_*"); err != nil {
@@ -175,11 +174,11 @@ func Judge(task *api.Task) error {
 		return errors.Wrap(err, "could not get code")
 	}
 
-	if err = Build(task); err != nil {
+	if err = build(task); err != nil {
 		return errors.Wrap(err, "could not build user program")
 	}
 
-	if err = Run(task); err != nil {
+	if err = run(task); err != nil {
 		return errors.Wrap(err, "could not run user program")
 	}
 
@@ -187,7 +186,7 @@ func Judge(task *api.Task) error {
 		return errors.Wrap(err, "could not hash output")
 	}
 
-	if err = Compare(task); err != nil {
+	if err = compare(task); err != nil {
 		return errors.Wrap(err, "could not compare output")
 	}
 
@@ -257,7 +256,7 @@ func getTestCase(task *api.Task) error {
 	return nil
 }
 
-func Build(task *api.Task) error {
+func build(task *api.Task) error {
 	var err error
 	if err = exec.Command("chmod", "-R", "777", task.JudgeDir).Run(); err != nil {
 		return errors.Wrap(err, "could not set permission for judge directory")
@@ -290,7 +289,7 @@ func Build(task *api.Task) error {
 	return nil
 }
 
-func Run(task *api.Task) error {
+func run(task *api.Task) error {
 
 	var runScriptOutput string
 	var err error
@@ -360,7 +359,7 @@ func hashOutput(task *api.Task) error {
 	return nil
 }
 
-func Compare(task *api.Task) error {
+func compare(task *api.Task) error {
 	err := EnsureLatestScript(task.CompareScript.Name, task.CompareScript.UpdatedAt)
 	if err != nil {
 		return errors.Wrap(err, "could not ensure compare script latest")
