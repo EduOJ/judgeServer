@@ -41,9 +41,9 @@ func TestGenerateRequest(t *testing.T) {
 		t.Parallel()
 		expectedReq := request.UpdateRunRequest{
 			Status:             "ACCEPTED",
-			MemoryUsed:         5120,
-			TimeUsed:           3000,
-			OutputStrippedHash: "test_generate_request_output_stripped_hash",
+			MemoryUsed:         &task.MemoryUsed,
+			TimeUsed:           &task.TimeUsed,
+			OutputStrippedHash: &task.OutputStrippedHash,
 			Message:            "",
 		}
 		actualReq := generateRequest(&task, nil)
@@ -53,9 +53,9 @@ func TestGenerateRequest(t *testing.T) {
 		t.Parallel()
 		expectedReq := request.UpdateRunRequest{
 			Status:             "WRONG_ANSWER",
-			MemoryUsed:         5120,
-			TimeUsed:           3000,
-			OutputStrippedHash: "test_generate_request_output_stripped_hash",
+			MemoryUsed:         &task.MemoryUsed,
+			TimeUsed:           &task.TimeUsed,
+			OutputStrippedHash: &task.OutputStrippedHash,
 			Message:            "",
 		}
 		actualReq := generateRequest(&task, errors.Wrap(ErrWA, "wrap message"))
@@ -65,9 +65,9 @@ func TestGenerateRequest(t *testing.T) {
 		t.Parallel()
 		expectedReq := request.UpdateRunRequest{
 			Status:             "PRESENTATION_ERROR",
-			MemoryUsed:         5120,
-			TimeUsed:           3000,
-			OutputStrippedHash: "test_generate_request_output_stripped_hash",
+			MemoryUsed:         &task.MemoryUsed,
+			TimeUsed:           &task.TimeUsed,
+			OutputStrippedHash: &task.OutputStrippedHash,
 			Message:            "",
 		}
 		actualReq := generateRequest(&task, errors.Wrap(ErrPE, "wrap message"))
@@ -77,9 +77,9 @@ func TestGenerateRequest(t *testing.T) {
 		t.Parallel()
 		expectedReq := request.UpdateRunRequest{
 			Status:             "TIME_LIMIT_EXCEEDED",
-			MemoryUsed:         5120,
-			TimeUsed:           3000,
-			OutputStrippedHash: "test_generate_request_output_stripped_hash",
+			MemoryUsed:         &task.MemoryUsed,
+			TimeUsed:           &task.TimeUsed,
+			OutputStrippedHash: &task.OutputStrippedHash,
 			Message:            "",
 		}
 		actualReq := generateRequest(&task, errors.Wrap(ErrTLE, "wrap message"))
@@ -89,9 +89,9 @@ func TestGenerateRequest(t *testing.T) {
 		t.Parallel()
 		expectedReq := request.UpdateRunRequest{
 			Status:             "MEMORY_LIMIT_EXCEEDED",
-			MemoryUsed:         5120,
-			TimeUsed:           3000,
-			OutputStrippedHash: "test_generate_request_output_stripped_hash",
+			MemoryUsed:         &task.MemoryUsed,
+			TimeUsed:           &task.TimeUsed,
+			OutputStrippedHash: &task.OutputStrippedHash,
 			Message:            "",
 		}
 		actualReq := generateRequest(&task, errors.Wrap(ErrMLE, "wrap message"))
@@ -101,9 +101,9 @@ func TestGenerateRequest(t *testing.T) {
 		t.Parallel()
 		expectedReq := request.UpdateRunRequest{
 			Status:             "RUNTIME_ERROR",
-			MemoryUsed:         5120,
-			TimeUsed:           3000,
-			OutputStrippedHash: "test_generate_request_output_stripped_hash",
+			MemoryUsed:         &task.MemoryUsed,
+			TimeUsed:           &task.TimeUsed,
+			OutputStrippedHash: &task.OutputStrippedHash,
 			Message:            "",
 		}
 		actualReq := generateRequest(&task, errors.Wrap(ErrRTE, "wrap message"))
@@ -113,9 +113,9 @@ func TestGenerateRequest(t *testing.T) {
 		t.Parallel()
 		expectedReq := request.UpdateRunRequest{
 			Status:             "DANGEROUS_SYSTEM_CALLS",
-			MemoryUsed:         5120,
-			TimeUsed:           3000,
-			OutputStrippedHash: "test_generate_request_output_stripped_hash",
+			MemoryUsed:         &task.MemoryUsed,
+			TimeUsed:           &task.TimeUsed,
+			OutputStrippedHash: &task.OutputStrippedHash,
 			Message:            "",
 		}
 		actualReq := generateRequest(&task, errors.Wrap(ErrDSC, "wrap message"))
@@ -125,9 +125,9 @@ func TestGenerateRequest(t *testing.T) {
 		t.Parallel()
 		expectedReq := request.UpdateRunRequest{
 			Status:             "COMPILE_ERROR",
-			MemoryUsed:         5120,
-			TimeUsed:           3000,
-			OutputStrippedHash: "test_generate_request_output_stripped_hash",
+			MemoryUsed:         &task.MemoryUsed,
+			TimeUsed:           &task.TimeUsed,
+			OutputStrippedHash: &task.OutputStrippedHash,
 			Message:            "",
 		}
 		actualReq := generateRequest(&task, errors.Wrap(ErrBuildError, "wrap message"))
@@ -137,9 +137,9 @@ func TestGenerateRequest(t *testing.T) {
 		t.Parallel()
 		expectedReq := request.UpdateRunRequest{
 			Status:             "JUDGEMENT_FAILED",
-			MemoryUsed:         5120,
-			TimeUsed:           3000,
-			OutputStrippedHash: "test_generate_request_output_stripped_hash",
+			MemoryUsed:         &task.MemoryUsed,
+			TimeUsed:           &task.TimeUsed,
+			OutputStrippedHash: &task.OutputStrippedHash,
 			Message:            "wrap message: other error",
 		}
 		actualReq := generateRequest(&task, errors.Wrap(errors.New("other error"), "wrap message"))

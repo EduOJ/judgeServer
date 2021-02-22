@@ -67,6 +67,14 @@ func checkMultipartFile(t *testing.T, fileHeader *multipart.FileHeader, fileName
 	assert.Equal(t, content, string(b))
 }
 
+func getUintPointer(x uint) *uint {
+	return &x
+}
+
+func getStringPointer(s string) *string {
+	return &s
+}
+
 func TestUpdateRun(t *testing.T) {
 	t.Parallel()
 
@@ -78,9 +86,9 @@ func TestUpdateRun(t *testing.T) {
 		}
 		req := request.UpdateRunRequest{
 			Status:             "ACCEPTED",
-			MemoryUsed:         1024,
-			TimeUsed:           1000,
-			OutputStrippedHash: "test_update_run_success_output_hash",
+			MemoryUsed:         getUintPointer(1024),
+			TimeUsed:           getUintPointer(1000),
+			OutputStrippedHash: getStringPointer("test_update_run_success_output_hash"),
 			Message:            "test_update_run_success_output_message",
 		}
 		err := UpdateRun(1, &req,
@@ -95,9 +103,9 @@ func TestUpdateRun(t *testing.T) {
 			"status":               {"ACCEPTED"},
 			"time_used":            {"1000"},
 		}
-		checkMultipartFile(t, runs[1].Form.File["OutputFile"][0], "OutputFile", "test_update_run_success_run_file")
-		checkMultipartFile(t, runs[1].Form.File["CompilerFile"][0], "CompilerFile", "test_update_run_success_build_output")
-		checkMultipartFile(t, runs[1].Form.File["ComparerFile"][0], "ComparerFile", "test_update_run_success_compare_output")
+		checkMultipartFile(t, runs[1].Form.File["output_file"][0], "output_file", "test_update_run_success_run_file")
+		checkMultipartFile(t, runs[1].Form.File["compiler_output_file"][0], "compiler_output_file", "test_update_run_success_build_output")
+		checkMultipartFile(t, runs[1].Form.File["comparer_output_file"][0], "comparer_output_file", "test_update_run_success_compare_output")
 		assert.Equal(t, expectedFormValue, runs[1].Form.Value)
 	})
 
@@ -109,9 +117,9 @@ func TestUpdateRun(t *testing.T) {
 		}
 		req := request.UpdateRunRequest{
 			Status:             "WRONG_ANSWER",
-			MemoryUsed:         2048,
-			TimeUsed:           2000,
-			OutputStrippedHash: "test_update_run_another_run_id_output_hash",
+			MemoryUsed:         getUintPointer(2048),
+			TimeUsed:           getUintPointer(2000),
+			OutputStrippedHash: getStringPointer("test_update_run_another_run_id_output_hash"),
 			Message:            "test_update_run_another_run_id_output_message",
 		}
 		err := UpdateRun(2, &req,
@@ -127,9 +135,9 @@ func TestUpdateRun(t *testing.T) {
 			"status":               {"WRONG_ANSWER"},
 			"time_used":            {"2000"},
 		}
-		checkMultipartFile(t, runs[2].Form.File["OutputFile"][0], "OutputFile", "test_update_run_another_run_id_run_file")
-		checkMultipartFile(t, runs[2].Form.File["CompilerFile"][0], "CompilerFile", "test_update_run_another_run_id_build_output")
-		checkMultipartFile(t, runs[2].Form.File["ComparerFile"][0], "ComparerFile", "test_update_run_another_run_id_compare_output")
+		checkMultipartFile(t, runs[2].Form.File["output_file"][0], "output_file", "test_update_run_another_run_id_run_file")
+		checkMultipartFile(t, runs[2].Form.File["compiler_output_file"][0], "compiler_output_file", "test_update_run_another_run_id_build_output")
+		checkMultipartFile(t, runs[2].Form.File["comparer_output_file"][0], "comparer_output_file", "test_update_run_another_run_id_compare_output")
 		assert.Equal(t, expectedFormValue, runs[2].Form.Value)
 	})
 }

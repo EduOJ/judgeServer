@@ -50,7 +50,7 @@ var ErrPE = errors.New("presentation error")
 func Start(threadCount int) {
 	base.QuitWG.Add(threadCount)
 	for i := 0; i < threadCount; i++ {
-		go work()
+		go Work()
 	}
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, syscall.SIGHUP,
@@ -71,7 +71,7 @@ func Start(threadCount int) {
 	base.QuitWG.Wait()
 }
 
-func work() {
+func Work() {
 	stop := false
 	go func() {
 		<-base.BaseContext.Done()
@@ -81,6 +81,10 @@ func work() {
 		var task *api.Task
 		err := api.ErrNotAvailable
 		for err == api.ErrNotAvailable {
+			if stop {
+				base.QuitWG.Done()
+				return
+			}
 			task, err = api.GetTask()
 		}
 		if err != nil {
@@ -125,9 +129,9 @@ func UpdateRun(task *api.Task, req *request.UpdateRunRequest) error {
 func generateRequest(task *api.Task, judgementError error) *request.UpdateRunRequest {
 	req := request.UpdateRunRequest{
 		Status:             "",
-		MemoryUsed:         task.MemoryUsed,
-		TimeUsed:           task.TimeUsed,
-		OutputStrippedHash: task.OutputStrippedHash,
+		MemoryUsed:         &task.MemoryUsed,
+		TimeUsed:           &task.TimeUsed,
+		OutputStrippedHash: &task.OutputStrippedHash,
 		Message:            "",
 	}
 	if judgementError == nil {

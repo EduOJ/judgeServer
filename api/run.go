@@ -15,14 +15,14 @@ import (
 func UpdateRun(id uint, request *request.UpdateRunRequest, runFile, buildOutputFile, compareOutputFile io.Reader) error {
 	req := base.HttpClient.R().SetMultipartFormData(map[string]string{
 		"status":               request.Status,
-		"memory_used":          strconv.Itoa(int(request.MemoryUsed)),
-		"time_used":            strconv.Itoa(int(request.TimeUsed)),
-		"output_stripped_hash": request.OutputStrippedHash,
+		"memory_used":          strconv.Itoa(int(*request.MemoryUsed)),
+		"time_used":            strconv.Itoa(int(*request.TimeUsed)),
+		"output_stripped_hash": *request.OutputStrippedHash,
 		"message":              request.Message,
 	}).
-		SetMultipartField("OutputFile", "OutputFile", "application/octet-stream", runFile).
-		SetMultipartField("CompilerFile", "CompilerFile", "application/octet-stream", buildOutputFile).
-		SetMultipartField("ComparerFile", "ComparerFile", "application/octet-stream", compareOutputFile)
+		SetMultipartField("output_file", "output_file", "application/octet-stream", runFile).
+		SetMultipartField("compiler_output_file", "compiler_output_file", "application/octet-stream", buildOutputFile).
+		SetMultipartField("comparer_output_file", "comparer_output_file", "application/octet-stream", compareOutputFile)
 
 	httpResp, err := req.Put(fmt.Sprintf("run/%d", id))
 	if err != nil {
