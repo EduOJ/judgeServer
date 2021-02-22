@@ -35,17 +35,17 @@ func task(wr http.ResponseWriter, q url.Values) {
 			Message: "SUCCESS",
 			Error:   nil,
 			Data: struct {
-				RunID              uint            `json:"run_id"`
-				Language           models.Language `json:"language"`
-				TestCaseID         uint            `json:"test_case_id"`
-				InputFile          string          `json:"input_file"`
-				OutputFile         string          `json:"output_file"`
-				CodeFile           string          `json:"code_file"`
-				TestCaseUpdatedAt  time.Time       `json:"test_case_updated_at"`
-				MemoryLimit        uint64          `json:"memory_limit"`
-				TimeLimit          uint            `json:"time_limit"`
-				CompileEnvironment string          `json:"compile_environment"`
-				CompareScript      models.Script   `json:"compare_script"`
+				RunID             uint            `json:"run_id"`
+				Language          models.Language `json:"language"`
+				TestCaseID        uint            `json:"test_case_id"`
+				InputFile         string          `json:"input_file"`  // pre-signed url
+				OutputFile        string          `json:"output_file"` // same as above
+				CodeFile          string          `json:"code_file"`
+				TestCaseUpdatedAt time.Time       `json:"test_case_updated_at"`
+				MemoryLimit       uint64          `json:"memory_limit"` // Byte
+				TimeLimit         uint            `json:"time_limit"`   // ms
+				BuildArg          string          `json:"build_arg"`    // E.g.  O2=false
+				CompareScript     models.Script   `json:"compare_script"`
 			}{
 				RunID: 0,
 				Language: models.Language{
@@ -68,14 +68,14 @@ func task(wr http.ResponseWriter, q url.Values) {
 					CreatedAt: hashStringToTime("test_task_language_created_at"),
 					UpdatedAt: hashStringToTime("test_task_language_updated_at"),
 				},
-				TestCaseID:         1,
-				InputFile:          "test_task_input_file_presigned_url",
-				OutputFile:         "test_task_output_file_presigned_url",
-				CodeFile:           "test_task_code_file_presigned_url",
-				TestCaseUpdatedAt:  hashStringToTime("test_task_test_case_updated_at"),
-				MemoryLimit:        1024,
-				TimeLimit:          1000,
-				CompileEnvironment: "test,task,build,args",
+				TestCaseID:        1,
+				InputFile:         "test_task_input_file_presigned_url",
+				OutputFile:        "test_task_output_file_presigned_url",
+				CodeFile:          "test_task_code_file_presigned_url",
+				TestCaseUpdatedAt: hashStringToTime("test_task_test_case_updated_at"),
+				MemoryLimit:       1024,
+				TimeLimit:         1000,
+				BuildArg:          "test,task,build,args",
 				CompareScript: models.Script{
 					Name:      "test_task_compare_script",
 					Filename:  "test_task_compare_script_filename",
@@ -154,19 +154,6 @@ func TestGetTask(t *testing.T) {
 			MemoryUsed:         0,
 			OutputStrippedHash: "",
 		}, task)
-		// debugging CI
-		assert.Equal(t, models.Script{
-			Name:      "test_task_build_script",
-			Filename:  "test_task_build_script_filename",
-			CreatedAt: hashStringToTime("test_task_build_script_created_at"),
-			UpdatedAt: hashStringToTime("test_task_build_script_updated_at"),
-		}, *task.Language.BuildScript)
-		assert.Equal(t, models.Script{
-			Name:      "test_task_run_script",
-			Filename:  "test_task_run_script_filename",
-			CreatedAt: hashStringToTime("test_task_run_script_created_at"),
-			UpdatedAt: hashStringToTime("test_task_run_script_updated_at"),
-		}, *task.Language.RunScript)
 	})
 
 	t.Run("NotFound", func(t *testing.T) {

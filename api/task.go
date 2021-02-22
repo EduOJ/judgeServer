@@ -32,9 +32,9 @@ type Task struct {
 	CompareOutputPath string
 	JudgeDir          string
 
-	MemoryLimit        uint64        `json:"memory_limit"`        // Byte
-	TimeLimit          uint          `json:"time_limit"`          // ms
-	BuildArg           string        `json:"compile_environment"` // E.g.  O2=false
+	MemoryLimit        uint64        `json:"memory_limit"` // Byte
+	TimeLimit          uint          `json:"time_limit"`   // ms
+	BuildArg           string        `json:"build_arg"`    // E.g.  O2=false
 	CompareScript      models.Script `json:"compare_script"`
 	TimeUsed           uint
 	MemoryUsed         uint
