@@ -89,6 +89,7 @@ func work() {
 		}
 		if err != nil {
 			log.WithField("error", err).Error("Error occurred when getting task.")
+			continue
 		}
 		if err = updateRun(task, generateRequest(task, judge(task))); err != nil {
 			log.WithField("error", err).Error("Error occurred when sending update request.")

@@ -53,7 +53,7 @@ type getTaskResponse struct {
 }
 
 func GetTask() (*Task, error) {
-	httpResp, err := base.HttpClient.R().SetQueryParam("poll", "1").Get("task")
+	httpResp, err := base.HttpClient.R().SetContext(base.BaseContext).SetQueryParam("poll", "1").Get("task")
 	if err != nil {
 		return nil, errors.Wrap(err, "could not send get request")
 	}
