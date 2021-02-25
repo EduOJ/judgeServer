@@ -23,6 +23,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 )
 
 var testCaseLocks sync.Map
@@ -77,6 +78,7 @@ func work() {
 		<-base.BaseContext.Done()
 		stop = true
 	}()
+	retryTimes := 0
 	for !stop {
 		var task *api.Task
 		err := api.ErrNotAvailable
@@ -85,12 +87,20 @@ func work() {
 				base.QuitWG.Done()
 				return
 			}
+			if retryTimes != 0 {
+				log.Warnf("Last attempt failed. Sleeping for %d seconds.\n", retryTimes)
+				time.Sleep(time.Second * time.Duration(retryTimes))
+			}
 			task, err = api.GetTask()
 		}
 		if err != nil {
 			log.WithField("error", err).Error("Error occurred when getting task.")
+			if retryTimes < 30 {
+				retryTimes += 1
+			}
 			continue
 		}
+		retryTimes = 0
 		if err = updateRun(task, generateRequest(task, judge(task))); err != nil {
 			log.WithField("error", err).Error("Error occurred when sending update request.")
 		}

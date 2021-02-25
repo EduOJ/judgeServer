@@ -68,8 +68,6 @@ func initFileLogger() {
 	if err != nil {
 		log.WithField("error", err).Error("Failed to open log file")
 	}
-	defer file.Close()
-	// TODO: fix log file writing
 
 	log.AddHook(&writer.Hook{
 		Writer: bufio.NewWriter(file),
