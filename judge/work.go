@@ -94,15 +94,19 @@ func work() {
 			task, err = api.GetTask()
 		}
 		if err != nil {
-			log.WithField("error", err).Error("Error occurred when getting task.")
+			log.WithField("error", err).Error("Error occurred while getting task.")
 			if retryTimes < 30 {
 				retryTimes += 1
 			}
 			continue
 		}
 		retryTimes = 0
-		if err = updateRun(task, generateRequest(task, judge(task))); err != nil {
-			log.WithField("error", err).Error("Error occurred when sending update request.")
+		judgeError := judge(task)
+		if judgeError != nil {
+			log.WithField("error", judgeError).Error("Error occurred while judging.")
+		}
+		if err = updateRun(task, generateRequest(task, judgeError)); err != nil {
+			log.WithField("error", err).Error("Error occurred while sending update request.")
 		}
 	}
 	base.QuitWG.Done()
