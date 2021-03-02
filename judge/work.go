@@ -324,10 +324,10 @@ func run(task *api.Task) error {
 	config := judger.Config{
 		MaxCPUTime:           int(task.TimeLimit),
 		MaxRealTime:          int(task.TimeLimit),
-		MaxMemory:            int32(task.MemoryLimit),
-		MaxStack:             int32(task.MemoryLimit),
+		MaxMemory:            int(task.MemoryLimit),
+		MaxStack:             int(task.MemoryLimit),
 		MaxProcessNumber:     -1,
-		MaxOutputSize:        viper.GetInt32("judge.run.max_output_size"),
+		MaxOutputSize:        viper.GetInt("judge.run.max_output_size"),
 		MemoryLimitCheckOnly: 1,
 		ExePath:              RunCommand[0],
 		InputPath:            task.InputFilePath,
