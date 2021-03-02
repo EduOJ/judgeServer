@@ -3,10 +3,10 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/leoleoasd/EduOJBackend/database/models"
+	"github.com/EduOJ/backend/database/models"
+	"github.com/EduOJ/judgeServer/base"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"github.com/suntt2019/EduOJJudger/base"
 	"net/http"
 	"path"
 	"time"

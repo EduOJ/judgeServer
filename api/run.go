@@ -3,10 +3,10 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/leoleoasd/EduOJBackend/app/request"
-	"github.com/leoleoasd/EduOJBackend/app/response"
+	"github.com/EduOJ/backend/app/request"
+	"github.com/EduOJ/backend/app/response"
+	"github.com/EduOJ/judgeServer/base"
 	"github.com/pkg/errors"
-	"github.com/suntt2019/EduOJJudger/base"
 	"io"
 	"net/http"
 	"strconv"

@@ -1,8 +1,8 @@
 package api
 
 import (
+	"github.com/EduOJ/judgeServer/base"
 	"github.com/pkg/errors"
-	"github.com/suntt2019/EduOJJudger/base"
 	"io/ioutil"
 	"net/http"
 	"os"

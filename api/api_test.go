@@ -2,9 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/EduOJ/judgeServer/base"
 	"github.com/go-resty/resty/v2"
 	"github.com/spf13/viper"
-	"github.com/suntt2019/EduOJJudger/base"
 	"hash/fnv"
 	"io"
 	"io/ioutil"

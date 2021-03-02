@@ -2,7 +2,7 @@
 
 A golang judge server for EduOJ.
 
-Using [Judger](https://github.com/suntt2019/Judger).
+Using [Judger](https://github.com/EduOJ/judger).
 
 ## Requirements
 

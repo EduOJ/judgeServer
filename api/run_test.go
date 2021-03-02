@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/leoleoasd/EduOJBackend/app/request"
-	"github.com/leoleoasd/EduOJBackend/app/response"
+	"github.com/EduOJ/backend/app/request"
+	"github.com/EduOJ/backend/app/response"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"mime/multipart"

@@ -1,10 +1,10 @@
 package judge
 
 import (
+	"github.com/EduOJ/judgeServer/api"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/suntt2019/EduOJJudger/api"
 	"os"
 	"os/exec"
 	"path"

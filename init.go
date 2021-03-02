@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/EduOJ/judgeServer/base"
 	"github.com/go-resty/resty/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/writer"
 	"github.com/spf13/viper"
-	"github.com/suntt2019/EduOJJudger/base"
 	"os"
 	"path/filepath"
 	"runtime"

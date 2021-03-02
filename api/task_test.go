@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/leoleoasd/EduOJBackend/app/response"
-	"github.com/leoleoasd/EduOJBackend/database/models"
+	"github.com/EduOJ/backend/app/response"
+	"github.com/EduOJ/backend/database/models"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"net/http"

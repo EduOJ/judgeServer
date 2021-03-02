@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/EduOJ/judgeServer/judge"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/suntt2019/EduOJJudger/judge"
 	"os/user"
 )
 
