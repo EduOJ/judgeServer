@@ -2,6 +2,7 @@ package judge
 
 import (
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/suntt2019/EduOJJudger/api"
 	"os"
@@ -69,8 +70,9 @@ func installScript(name string, file *os.File) error {
 	}
 
 	// TODO: Fix issue
-	err = exec.Command("unzip", file.Name(), "-d", path.Join(viper.GetString("path.scripts"), name)).Run()
+	output, err := exec.Command("unzip", file.Name(), "-d", path.Join(viper.GetString("path.scripts"), name)).CombinedOutput()
 	if err != nil {
+		log.WithField("output", output).Error("Unzip Error!")
 		return errors.Wrap(err, "could not unzip script zip file")
 	}
 
