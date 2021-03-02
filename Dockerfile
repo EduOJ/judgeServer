@@ -22,7 +22,7 @@ RUN apt-get install -y unzip diffutils
 
 RUN mkdir /judger
 COPY . /judger
-RUN cd /judger && go build .
+RUN cd /judger && go mod download && go build .
 RUN useradd build_user
 RUN useradd run_user
 
