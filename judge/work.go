@@ -89,9 +89,17 @@ func work() {
 			}
 			if retryTimes != 0 {
 				log.Warnf("Last attempt failed. Sleeping for %d seconds.\n", retryTimes)
-				time.Sleep(time.Second * time.Duration(retryTimes))
+				select {
+				case <-base.BaseContext.Done():
+					stop = true
+					continue
+				case <-time.After(time.Second * time.Duration(retryTimes)):
+				}
 			}
 			task, err = api.GetTask()
+			if err == nil || err == api.ErrNotAvailable {
+				retryTimes = 0
+			}
 		}
 		if err != nil {
 			log.WithField("error", err).Error("Error occurred while getting task.")
@@ -100,7 +108,6 @@ func work() {
 			}
 			continue
 		}
-		retryTimes = 0
 		judgeError := judge(task)
 		if judgeError != nil {
 			log.WithField("error", judgeError).Error("Error occurred while judging.")
@@ -108,6 +115,7 @@ func work() {
 		if err = updateRun(task, generateRequest(task, judgeError)); err != nil {
 			log.WithField("error", err).Error("Error occurred while sending update request.")
 		}
+		_ = os.RemoveAll(task.JudgeDir)
 	}
 	base.QuitWG.Done()
 }
