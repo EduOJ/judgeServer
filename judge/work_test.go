@@ -386,7 +386,7 @@ func TestRun(t *testing.T) {
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/Success"),
 			TimeLimit:   1000,
-			MemoryLimit: 500 * 1024 * 1024,
+			MemoryLimit: 5000 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
@@ -444,7 +444,7 @@ echo -n $1/a.out
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/TimeLimitExceeded"),
 			TimeLimit:   1000,
-			MemoryLimit: 5 * 1024 * 1024,
+			MemoryLimit: 2000 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
@@ -560,7 +560,7 @@ echo -n $1/a.out
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/RuntimeError"),
 			TimeLimit:   1000,
-			MemoryLimit: 500 * 1024 * 1024,
+			MemoryLimit: 5000 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
@@ -690,7 +690,7 @@ echo -n $1/a.out
 		task := api.Task{
 			RunID:       hashStringToId("[Run] TestRun/SystemError"),
 			TimeLimit:   1000,
-			MemoryLimit: 500 * 1024 * 1024,
+			MemoryLimit: 5000 * 1024 * 1024,
 			Language: models.Language{
 				Name: "cpp",
 				RunScript: &models.Script{
