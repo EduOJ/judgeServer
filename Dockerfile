@@ -29,4 +29,4 @@ RUN useradd run_user
 RUN mkdir -p /data/scripts
 RUN mkdir -p /data/test_cases
 
-CMD /judger/EduOJJudger
+CMD /judger/judgeServer
