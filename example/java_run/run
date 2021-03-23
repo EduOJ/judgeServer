@@ -1,0 +1,2 @@
+#!/bin/bash
+echo -n /usr/bin/java -- -cp "$1" -XX:MaxRAM=2G -Djava.security.manager -Dfile.encoding=UTF-8 -Djava.security.policy=/etc/java_policy -Djava.awt.headless=true Main

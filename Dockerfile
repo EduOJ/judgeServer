@@ -19,6 +19,9 @@ RUN rm go1.16.linux-amd64.tar.gz
 
 RUN apt-get install -y pkg-config gcc libseccomp-dev
 RUN apt-get install -y unzip diffutils
+RUN apt-get install -y default-jdk
+
+COPY ./build/java_policy /etc
 
 RUN mkdir /judger
 COPY . /judger

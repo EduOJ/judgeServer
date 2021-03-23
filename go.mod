@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/EduOJ/backend v0.0.0-20210302111520-6e9f42f0290c
-	github.com/EduOJ/judger v1.0.0
+	github.com/EduOJ/judger v1.0.1
 	github.com/go-redis/redis/v8 v8.6.0 // indirect
 	github.com/go-resty/resty/v2 v2.4.0
 	github.com/klauspost/cpuid/v2 v2.0.3 // indirect

@@ -16,7 +16,7 @@ for i in output_f:
     if i.rstrip("\n").endswith(" "):
         o.append(i.rstrip("\n").rstrip(" ") + "\n")
     else:
-        o.append(i)
+        o.append(i.rstrip("\n"))
 output_f = o
 o = []
 
@@ -24,7 +24,7 @@ for i in answer_f:
     if i.rstrip("\n").endswith(" "):
         o.append(i.rstrip("\n").rstrip(" ") + "\n")
     else:
-        o.append(i)
+        o.append(i.rstrip("\n"))
 answer_f = o
 o = []
 

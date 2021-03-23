@@ -1,0 +1,3 @@
+#!/bin/bash
+mv "$1"/code "$1"/Main.java
+javac "$1"/Main.java -d "$1"
