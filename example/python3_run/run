@@ -1,0 +1,2 @@
+#!/bin/bash
+echo -n /usr/bin/python3 -- "$1"/code

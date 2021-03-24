@@ -13,25 +13,19 @@ with open(answer) as f:
 
 o = []
 for i in output_f:
-    if i.rstrip("\n").endswith(" "):
-        o.append(i.rstrip("\n").rstrip(" ") + "\n")
-    else:
-        o.append(i.rstrip("\n"))
+    o.append(i.rstrip("\n").rstrip(" "))
 output_f = o
 o = []
 
 for i in answer_f:
-    if i.rstrip("\n").endswith(" "):
-        o.append(i.rstrip("\n").rstrip(" ") + "\n")
-    else:
-        o.append(i.rstrip("\n"))
+    o.append(i.rstrip("\n").rstrip(" "))
 answer_f = o
 o = []
 
-while len(output_f) > 0 and output_f[-1] == '\n':
+while len(output_f) > 0 and output_f[-1] == '':
     del output_f[-1]
 
-while len(answer_f) > 0 and answer_f[-1] == '\n':
+while len(answer_f) > 0 and answer_f[-1] == '':
     del answer_f[-1]
 
 if len(output_f) != len(answer_f):
