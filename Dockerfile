@@ -26,6 +26,7 @@ COPY ./build/java_policy /etc
 RUN mkdir /judger
 COPY . /judger
 RUN cd /judger && go mod download && go build .
+RUN cd /judger && tar -xzvf sysroot.tgz
 RUN useradd build_user
 RUN useradd run_user
 
