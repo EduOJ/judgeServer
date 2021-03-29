@@ -10,6 +10,7 @@ import (
 	"github.com/EduOJ/judgeServer/api"
 	"github.com/EduOJ/judgeServer/base"
 	"github.com/EduOJ/judger"
+	"github.com/google/shlex"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -20,7 +21,6 @@ import (
 	"os/signal"
 	"path"
 	"strconv"
-	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -296,8 +296,18 @@ func build(task *api.Task) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), viper.GetDuration("judge.build.max_time"))
 	defer cancel()
+	var args []string
+	x_args, err := shlex.Split(task.BuildArg)
+	if err != nil {
+		return errors.Wrap(err, "could not split build argument")
+	}
+	for _, i := range x_args {
+		if i != "" {
+			args = append(args, i)
+		}
+	}
 	cmd := exec.CommandContext(ctx, path.Join(viper.GetString("path.scripts"), task.Language.BuildScript.Name, "run"),
-		append([]string{task.JudgeDir}, strings.Split(task.BuildArg, " ")...)...)
+		append(args, task.JudgeDir)...)
 
 	buildOutput, err := os.OpenFile(task.BuildOutputPath, os.O_WRONLY, 0)
 	if err != nil {
@@ -324,7 +334,19 @@ func run(task *api.Task) error {
 	if runScriptOutput, err = RunScriptWithOutput(task.Language.RunScript.Name, task.Language.RunScript.UpdatedAt, task.JudgeDir); err != nil {
 		return errors.Wrap(err, "could not ensure run script latest")
 	}
-	RunCommand := strings.Split(runScriptOutput, " ")
+	var RunCommand []string
+	x_args, err := shlex.Split(runScriptOutput)
+	if err != nil {
+		return errors.Wrap(err, "could not split run script output")
+	}
+	for _, i := range x_args {
+		if i != "" {
+			RunCommand = append(RunCommand, i)
+		}
+	}
+	if len(RunCommand) < 2 {
+		return errors.Wrap(err, "bad run script output")
+	}
 
 	config := judger.Config{
 		MaxCPUTime:           int(task.TimeLimit),

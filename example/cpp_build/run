@@ -1,3 +1,23 @@
-#!/bin/bash
-mv "$1"/code "$1"/code.cpp
-clang++ "$1"/code.cpp -o "$1"/a.out -Qunused-arguments -lm -O2 -DONLINE_JUDGE -std=c++17 -fmax-errors=255
+#!/usr/bin/env python3
+# mv "$1"/code "$1"/code.cpp
+# clang++ "$1"/code.cpp -o "$1"/a.out -Qunused-arguments -lm -O2 -DONLINE_JUDGE -std=c++17 -fmax-errors=255
+import argparse
+import os
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--no-stl', default=False, type=bool)
+    parser.add_argument('--no-optimization', default=False, type=bool)
+    parser.add_argument('--std', default="c++17", type=str)
+    parser.add_argument('directory', metavar='directory', type=str, nargs=1, help='revisions')
+    args = parser.parse_args()
+    os.system(f"mv {args.directory[0]}/code {args.directory[0]}/code.cpp")
+    clang_args = ""
+    if args.no_stl:
+        clang_args += "--sysroot /judger/sysroot-no-stl "
+    if not args.no_optimization:
+        clang_args += "-O2"
+    os.system(f"clang++ {args.directory[0]}/code.cpp -o {args.directory[0]}/a.out  -Qunused-arguments -lm  -DONLINE_JUDGE -std={args.std} -fmax-errors=255 {clang_args}")
+
+if __name__ == '__main__':
+    main()
