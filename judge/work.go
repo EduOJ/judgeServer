@@ -118,6 +118,9 @@ func work() {
 			log.WithField("error", err).Error("Error occurred while sending update request.")
 		}
 		_ = os.RemoveAll(task.JudgeDir)
+		_ = os.RemoveAll(task.CompareOutputPath)
+		_ = os.RemoveAll(task.RunFilePath)
+		_ = os.RemoveAll(task.BuildOutputPath)
 	}
 	base.QuitWG.Done()
 }
