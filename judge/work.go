@@ -344,7 +344,7 @@ func run(task *api.Task) error {
 			RunCommand = append(RunCommand, i)
 		}
 	}
-	if len(RunCommand) < 2 {
+	if len(RunCommand) == 0 {
 		return errors.Wrap(err, "bad run script output")
 	}
 
