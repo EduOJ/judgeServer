@@ -1,3 +1,22 @@
-#!/bin/bash
-mv "$1"/code "$1"/code.c
-clang "$1"/code.c -o "$1"/a.out -Qunused-arguments -lm -O2 -DONLINE_JUDGE -std=c17 -fmax-errors=255
+#!/usr/bin/env python3
+#mv "$1"/code "$1"/code.c
+#clang "$1"/code.c -o "$1"/a.out -Qunused-arguments -lm -O2 -DONLINE_JUDGE -std=c17 -fmax-errors=255
+import argparse
+import os
+import subprocess
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--c-no-optimization", default=False, type=bool)
+    parser.add_argument("--c-std", default="c17", type=str)
+    parser.add_argument("file", metavar="file", type=str, nargs=1, help="file to compile")
+    args, unknown = parser.parse_known_args()
+    os.system(f"mv {args.file[0]}/code {args.file[0]}/code.c")
+    clang_args = ""
+    if not args.c_no_optimization:
+        clang_args += "-O2"
+    clang = subprocess.run(f"clang {args.file[0]}/code.c -o {args.file[0]}/a.out  -Qunused-arguments -lm  -DONLINE_JUDGE -std={args.c_std} -fmax-errors=255 {clang_args}", shell=True)
+    exit(clang.returncode)
+
+if __name__ == "__main__":
+    main()

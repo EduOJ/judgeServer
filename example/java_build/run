@@ -1,3 +1,19 @@
-#!/bin/bash
-mv "$1"/code "$1"/Main.java
-javac "$1"/Main.java -d "$1"
+#!/usr/bin/env python3
+
+# mv "$1"/code "$1"/Main.java
+# javac "$1"/Main.java -d "$1"
+
+import argparse
+import os
+import subprocess
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file', metavar='file', type=str, nargs=1, help='file to compile')
+    args, unknown = parser.parse_known_args()
+    os.system(f"mv {args.file[0]}/code {args.file[0]}/Main.java")
+    javac = subprocess.run(f"javac {args.file[0]}/Main.java -d {args.file[0]}", shell=True)
+    exit(javac.returncode)
+
+if __name__ == '__main__':
+    main()

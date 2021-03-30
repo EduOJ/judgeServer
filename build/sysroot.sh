@@ -2,7 +2,7 @@
 sudo apt-get install -y debootstrap
 mkdir sysroot-no-stl
 sudo debootstrap bionic ./sysroot-no-stl
-cp /etc/apt/sources.list sysroot-no-stl/etc/apt/sources.list
+sudo cp /etc/apt/sources.list sysroot-no-stl/etc/apt/sources.list
 sudo chroot sysroot-no-stl apt-get update
 sudo chroot sysroot-no-stl apt-get install -y libstdc++-9-dev
 sudo mv ./sysroot-no-stl/usr/include/c++/9/vector ./sysroot-no-stl/usr/include/c++/9/vector_forbidden
