@@ -117,10 +117,14 @@ func work() {
 		if err = updateRun(task, generateRequest(task, judgeError)); err != nil {
 			log.WithField("error", err).Error("Error occurred while sending update request.")
 		}
-		_ = os.RemoveAll(task.JudgeDir)
-		_ = os.RemoveAll(task.CompareOutputPath)
-		_ = os.RemoveAll(task.RunFilePath)
-		_ = os.RemoveAll(task.BuildOutputPath)
+		if !viper.GetBool("debug") {
+			_ = os.RemoveAll(task.JudgeDir)
+			_ = os.RemoveAll(task.CompareOutputPath)
+			_ = os.RemoveAll(task.RunFilePath)
+			_ = os.RemoveAll(task.BuildOutputPath)
+		} else {
+			log.Debugf("Judge finished. Task: %+v\n", task)
+		}
 	}
 	base.QuitWG.Done()
 }
@@ -318,6 +322,7 @@ func build(task *api.Task) error {
 	cmd.Stderr = buildOutput
 
 	if err := base.BuildUser.Run(cmd); err != nil {
+		log.Debugf("Build ERROR: %+v\n", err)
 		var exitError *exec.ExitError
 		if errors.As(err, &exitError) {
 			return ErrBuildError
