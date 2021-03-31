@@ -7,7 +7,7 @@ require (
 	github.com/EduOJ/judger v1.0.1
 	github.com/go-redis/redis/v8 v8.6.0 // indirect
 	github.com/go-resty/resty/v2 v2.4.0
-	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/klauspost/cpuid/v2 v2.0.3 // indirect
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
