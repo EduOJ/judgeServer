@@ -24,13 +24,10 @@ output_s = (" ".join([i.strip() for i in output_f])).split(" ")
 answer_s = (" ".join([i.strip() for i in answer_f])).split(" ")
 
 try:
-    for i in range(0, len(output_f.split(" "))):
+    for i in range(0, len(answer_s)):
         if abs(float(output_s[i]) - float(answer_s[i])) > 1e-8:
             wa()
 except Exception:
-    exit(-1)
+    wa()
 
 exit(0)
-
-
-
