@@ -14,7 +14,7 @@ with open(answer) as f:
 
 
 def wa():
-    sys.stdout.writelines(difflib.unified_diff(answer_f, output_f, fromfile='answer', tofile='output'))
+    sys.stdout.writelines(difflib.unified_diff(answer_f, output_f, fromfile="answer", tofile="output"))
     exit(1)
 
 if len((" ".join([i.strip() for i in output_f])).split(" ")) != len(" ".join([i.strip() for i in answer_f]).split(" ")):
@@ -25,9 +25,10 @@ answer_s = (" ".join([i.strip() for i in answer_f])).split(" ")
 
 try:
     for i in range(0, len(answer_s)):
-        if abs(float(output_s[i]) - float(answer_s[i])) > 1e-8:
+        if abs(float(output_s[i]) - float(answer_s[i])) > 1e-5:
             wa()
 except Exception:
+    print(Exception)
     wa()
 
 exit(0)
