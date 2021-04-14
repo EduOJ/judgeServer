@@ -382,7 +382,7 @@ func run(task *api.Task) error {
 	log.Debugf("Command to run: %+v\n", RunCommand)
 	log.Debugf("Result: %+v\n", result)
 
-	task.TimeUsed = uint(result.CPUTime)
+	task.TimeUsed = uint(result.RealTime)
 	task.MemoryUsed = uint(result.Memory)
 	if syscall.Signal(result.Signal) == syscall.SIGSYS {
 		return ErrDSC
